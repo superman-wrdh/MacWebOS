@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppId } from '../types';
 import { APP_CONFIGS } from '../constants';
 import { Search } from 'lucide-react';
@@ -10,13 +10,24 @@ interface LaunchpadProps {
 }
 
 export const Launchpad: React.FC<LaunchpadProps> = ({ isOpen, onClose, onAppClick }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Reset search when opening
+    useEffect(() => {
+        if (isOpen) {
+            setSearchQuery('');
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     // Filter out Launchpad itself, About app, and Trash from the grid
+    // And filter by search query
     const apps = Object.values(APP_CONFIGS).filter(app => 
         app.id !== AppId.LAUNCHPAD && 
         app.id !== AppId.ABOUT && 
-        app.id !== AppId.TRASH
+        app.id !== AppId.TRASH &&
+        app.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -33,6 +44,9 @@ export const Launchpad: React.FC<LaunchpadProps> = ({ isOpen, onClose, onAppClic
                     type="text" 
                     placeholder="Search" 
                     className="w-full bg-gray-500/30 text-white placeholder-gray-300 rounded-lg py-1.5 pl-10 pr-4 border border-gray-500/50 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
                 />
             </div>
 
@@ -49,6 +63,11 @@ export const Launchpad: React.FC<LaunchpadProps> = ({ isOpen, onClose, onAppClic
                         <span className="text-white font-medium text-sm tracking-wide text-shadow-sm text-center whitespace-nowrap">{app.name}</span>
                     </div>
                 ))}
+                {apps.length === 0 && (
+                    <div className="col-span-full flex justify-center text-white/50 text-lg">
+                        No applications found
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,0 +1,5 @@
+{
+  "name": "MacWeb OS",
+  "description": "A web-based simulation of the macOS interface featuring a functional Dock, Window management, System Settings for wallpapers, and simulated applications.",
+  "requestFramePermissions": []
+}

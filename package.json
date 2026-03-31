@@ -12,6 +12,7 @@
     "lucide-react": "^0.554.0",
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "^6.5.10",
+    "pixi.js-legacy": "^6.5.10",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

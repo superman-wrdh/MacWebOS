@@ -3,8 +3,12 @@ import * as PIXI from 'pixi.js';
 import { Live2DModel } from 'pixi-live2d-display';
 
 // Fix for shader error in some environments
-(PIXI as any).settings.PRECISION_FRAGMENT = 'highp';
+// Remove PRECISION_FRAGMENT override as it can cause checkMaxIfStatementsInShader error on devices without highp support
 (PIXI as any).settings.SPRITE_MAX_TEXTURES = 16;
+// Force WebGL 1 for better compatibility in iframes
+if ((PIXI as any).ENV) {
+  (PIXI as any).settings.PREFER_ENV = (PIXI as any).ENV.WEBGL_LEGACY || 1;
+}
 
 // Register PIXI to Live2DModel
 (window as any).PIXI = PIXI;
@@ -25,12 +29,18 @@ export const Live2D: React.FC<Live2DProps> = ({
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    const app = new PIXI.Application({
-      view: canvasRef.current,
-      autoStart: true,
-      backgroundAlpha: 0,
-      resizeTo: canvasRef.current.parentElement || undefined,
-    });
+    let app: PIXI.Application;
+    try {
+      app = new PIXI.Application({
+        view: canvasRef.current,
+        autoStart: true,
+        backgroundAlpha: 0,
+        resizeTo: canvasRef.current.parentElement || undefined,
+      });
+    } catch (e) {
+      console.error("WebGL is not supported or failed to initialize PIXI:", e);
+      return;
+    }
 
     const loadModel = async () => {
       try {

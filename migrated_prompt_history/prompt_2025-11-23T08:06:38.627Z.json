@@ -1,0 +1,620 @@
+[
+  {
+    "id": 0,
+    "author": "user",
+    "payload": {
+      "type": "text",
+      "text": "请你帮我做一个模仿mac os的页面\n状态栏 \n\t1 最右边显示时间 \n    2 左边显示苹果logo,点击苹果logo有下拉菜单有 1关于本机 2 设置 3锁定屏幕\n\n\ndock栏，先做几个app固定在dockerl栏上面 \n1 访达\n2 启动台\n3 google浏览器,采用iframe\n4 照片\n5 日历\n6 记事本\n7 app store\n8 设置 (设置现在做几个 桌面壁纸设置 选中本地壁纸上传当做桌面)\n\n最右边 回收站",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763882637668
+  },
+  {
+    "id": 1,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Analyzing the Requirements**\n\nI'm currently dissecting the request. My focus is on understanding the core functionality needed for a Mac OS-style web interface. The key elements, like a status bar, are now being evaluated. I'm taking notes on the React, TypeScript, and Tailwind CSS implementation.\n\n\n**Designing the Core Elements**\n\nI'm now integrating the Dock and the essential applications. I'm focusing on the layout and functionality, including the Apple logo with dropdown, the status bar's clock, and a functional Dock at the bottom. The trash is also placed. The tech stack is React, TypeScript, and Tailwind CSS. I have now decided to use `iframe` for Chrome, with plans for a workaround for blocked URLs. Window management, albeit basic, is planned to be incorporated. The focus is now on wallpaper settings within the settings.\n\n\n**Structuring the Components**\n\nI've outlined the architecture: `App.tsx` as the core, holding the desktop state, while components like `Desktop.tsx`, `StatusBar.tsx`, and `Dock.tsx` form the visual layout. I've designed reusable window containers for individual apps and have specific app components such as Finder, Settings, Browser, Calendar, Notes, and AboutMac defined. Types and constants for the states have also been crafted. I now need to think about state management to track which apps are open, in focus, and minimized.\n\n\n**Developing Window Management**\n\nI'm now focusing on window management, defining the structure for windows and the wallpaper. I'm finalizing the logic for window states, including open, minimized, and z-index. I plan to handle the wallpaper as a URL string. The status bar features a clock updating every minute and an Apple menu with a dropdown state. I'm also now considering the dock: It'll display a list of apps with hover effects and click handlers to open or bring windows to the front. Finally, I've decided to implement draggable windows with a custom drag implementation.\n\n\n**Integrating Features**\n\nI'm now integrating the settings app with the drag handler. I'm focusing on the file input functionality for setting the wallpaper. I also plan to provide a simple workaround for the Chrome app using an `iframe`, and I am working on the glassmorphism. I have the traffic lights for the window controls. I'll use Lucide for the icons, and `toLocaleTimeString` for the date.\n\n\n**Constructing App Navigation**\n\nI'm currently fleshing out the application launcher and system-level menus. I've structured the Apple menu with About, Settings, and a Lock Screen option that's just a visual overlay with a password input. I'm focusing on the app selection, which includes Finder, Launchpad, Chrome, and others. I'm also planning on implementing window components with specific lifecycle methods like onClose and onMinimize, aiming for a robust OS feel. I am also currently building the logic for the AppId enum and the window logic.\n\n\n**Optimizing the Search Functionality**\n\nI'm now focusing on implementing a working search feature. I've realized embedding Google directly via `iframe` is often blocked, so I'm testing `https://www.google.com/webhp?igu=1` as a workaround. If that doesn't work, I'll need to create a custom search UI, which is a bit less ideal, but necessary if direct embedding fails. I'll add the trash to the right of the dock and the clock and Apple menu to their correct status bar positions, too. I'm calling it \"MacWeb\" and will include basic metadata.\n\n\\n\\n\n\n\n**Structuring the Project**\n\nI'm now focusing on the project structure, establishing key files such as `index.tsx` for entry, `types.ts`, `constants.ts` for app definitions, and components for `MenuBar`, `Dock`, and `Window`. I'm organizing the smaller apps into a singular container, `Apps.tsx`, for efficiency, keeping the Browser as its dedicated component. I've also added `metadata.json` for project details.\n\n\nI'm currently fleshing out the 'Lock Screen' functionality, managed by a simple state within `App.tsx`. Wallpapers now default to a curated Unsplash image with upload capabilities via `FileReader`. I'm using `wikipedia.org` for the browser demo now; it has a more consistent and reliable functionality. Let's start coding.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763882637668,
+    "doneTimestamp": 1763882673073
+  },
+  {
+    "id": 2,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "metadata.json",
+          "generationType": 0,
+          "isDone": true,
+          "description": "App metadata definition"
+        },
+        {
+          "path": "index.html",
+          "generationType": 0,
+          "isDone": true,
+          "description": "HTML entry point with Tailwind CSS and Font configuration"
+        },
+        {
+          "path": "index.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "React application entry point"
+        },
+        {
+          "path": "types.ts",
+          "generationType": 0,
+          "isDone": true,
+          "description": "TypeScript definitions for application state and constants"
+        },
+        {
+          "path": "constants.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Icons and Application Configuration"
+        },
+        {
+          "path": "components/MenuBar.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Top status bar with Apple menu and clock"
+        },
+        {
+          "path": "components/Dock.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Mac Dock with icons"
+        },
+        {
+          "path": "components/Window.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Draggable Window Component"
+        },
+        {
+          "path": "apps/Browser.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Mock Chrome Browser Component"
+        },
+        {
+          "path": "apps/Settings.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Settings App to change wallpaper"
+        },
+        {
+          "path": "apps/SystemApps.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Simpler System Apps (Finder, Calendar, Photos, Notes)"
+        },
+        {
+          "path": "components/Launchpad.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Fullscreen App Launcher"
+        },
+        {
+          "path": "App.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Main application orchestrator"
+        }
+      ]
+    },
+    "createdTimestamp": 1763882673073,
+    "doneTimestamp": 1763882673272
+  },
+  {
+    "id": 3,
+    "author": "model",
+    "payload": {
+      "type": "fixingErrors",
+      "diagnostics": [
+        {
+          "Nya": "components/MenuBar.tsx",
+          "message": "Cannot find name 'APP_CONFIGS'.",
+          "line": 90,
+          "column": 12
+        }
+      ]
+    },
+    "createdTimestamp": 1763882794330,
+    "doneTimestamp": 1763882816611
+  },
+  {
+    "id": 4,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Pinpointing the Culprit**\n\nI've been trying to solve this `APP_CONFIGS` issue within `MenuBar.tsx`. It seems the root is a missing import for that constant on line 90, which is causing the compilation error. I'm focusing on the file's structure to determine the proper way to resolve the import, hopefully leading to a clean build.\n\n\n**Clarifying the Import**\n\nI've confirmed that `APP_CONFIGS` resides in `constants.tsx`, specifically under `../constants` relative to `MenuBar.tsx`. I now know the exact import statement I need to add to `MenuBar.tsx` to fix this issue: `import { APP_CONFIGS } from '../constants';`. This should resolve the missing import error and allow the build to proceed.\n\n\n**Fixing the Import**\n\nI'm now certain the import is correct, confirming `APP_CONFIGS` is used on line 90 of `MenuBar.tsx` and exported in the `constants.tsx` file. I've added `import { APP_CONFIGS } from '../constants';` to `MenuBar.tsx`. This should definitively solve the compilation error, resolving the \"missing import\" issue.\n\n\n**Confirming the Fix**\n\nI've implemented the import for `AppId` from `../types` and confirmed its correct usage within `MenuBar.tsx`. I've also incorporated the fix for `APP_CONFIGS`. Now, I'm focusing on ensuring these imports are properly applied to the `MenuBarProps` interface and used correctly in the component's implementation. This should provide the necessary data types for the component to function correctly.\n\n\n**Integrating Time Display**\n\nI've integrated `formatTime` and `formatDate` functions to properly display the current time and date in the menu bar. These functions use `toLocaleDateString` for formatting based on US English locale and specific options for time and date components. I've placed the generated time and date strings within the return statement, which is responsible for rendering the UI. This enhances the user experience by showing updated time and date information.\n\n\n**Implementing Menu Interactions**\n\nI've integrated click handlers for \"About This Mac\" and \"System Settings,\" ensuring they trigger `onAppleMenuSelect` with the appropriate action and close the menu. The UI now responds correctly to these interactions. I'm also adding visual separators to organize the menu, and then will finalize all menu functionalities.\n\n\n**Completing the Menu**\n\nI've finished the implementation of the menu. I've integrated \"Shut Down\" and \"Lock Screen\" options, complete with click handlers to trigger `onAppleMenuSelect` with corresponding actions. I've added a visual separator for better organization. The menu now has all its intended functionalities fully operational.\n\n\n**Styling the Display**\n\nI'm now styling the components to improve their visual presentation. I'm focusing on the date and time display, ensuring it's clearly readable. I'm also styling the icons. I'm using Tailwind CSS classes for spacing, alignment, and opacity to give the component a polished look. My aim is to make the displayed information both functional and visually appealing for the user.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763882801113,
+    "doneTimestamp": 1763882816611
+  },
+  {
+    "id": 5,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "components/MenuBar.tsx",
+          "generationType": 2,
+          "isDone": true,
+          "description": "Import APP_CONFIGS from constants"
+        }
+      ]
+    },
+    "createdTimestamp": 1763882816611,
+    "doneTimestamp": 1763882826713
+  },
+  {
+    "id": 7,
+    "author": "user",
+    "payload": {
+      "type": "text",
+      "text": "非常棒，UI完美实现。\n接下来请你优化代码，每个app用一个组件实现，放到代码目录 apps下面。\ngoogle浏览器的实现请你优化，浏览器的地址栏支持输入地址。",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883189577
+  },
+  {
+    "id": 8,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Reviewing Refinement Plans**\n\nI'm pleased with the current Mac-like UI, but want to refactor the code. I'm focusing on improving organization and the Browser application specifically. Moving each app component into dedicated files is my immediate goal, I'll then tackle the structure of the browser and implement performance enhancements. I'm prioritizing overall code maintainability and scalability, as well as Browser application speed.\n\n\n**Reorganizing App Structure**\n\nI've just finished the refactoring to separate the system apps into dedicated component files within the `apps/` directory, moving `FinderApp`, `PhotosApp`, `CalendarApp`, and `NotesApp` out of `SystemApps.tsx`. Now, I'm focusing on enhancing the `Browser` application. I need to make the address bar functional and responsive, ensuring the iframe updates correctly with new addresses, and handle potential iframe blocking issues gracefully.\n\n\n**Isolating App Components**\n\nI'm now separating each app, as requested. I've begun creating individual component files within the `apps/` directory, moving `FinderApp`, `PhotosApp`, `CalendarApp`, and `NotesApp` from `SystemApps.tsx`. Next, I'm focusing on the `Browser` application. I'll be improving the input handling logic and ensuring the `navigate` function correctly updates the iframe `src` based on the enter key press. Then, I will address imports in `App.tsx` to reflect the new file structure. Finally, I'll add \"browser-like\" visuals such as refresh and back/forward functionality.\n\n\n**Structuring Individual Apps**\n\nI've just finished the initial refactoring of the system apps. I've successfully extracted `FinderApp`, `PhotosApp`, `CalendarApp`, and `NotesApp` into their respective dedicated files within the `apps/` directory, updating the imports in `App.tsx` accordingly. Now, I'm focusing on the `Browser` application. I've begun to further refine the address bar interaction, adding checks for `http` vs `https` and handling cases like \"google.com\" gracefully. Next, I'll review the browser's UI, ensuring it more closely resembles Chrome/Safari.\n\n**Completing App Extraction**\n\nI've now successfully extracted `PhotosApp`, `CalendarApp`, and `NotesApp` into their dedicated component files, completing the requested file separation within the `apps/` directory. Next, I'm focusing on the `Browser` application. I'll concentrate on the input functionality: enabling typing, updating the URL on Enter, and displaying a loading state while fetching the content. Additionally, I might introduce a \"New Tab\" page when the URL is empty. Finally, I will update imports in `App.tsx`, verifying existing exports are intact.\n\n\n**Enhancing Browser Functionality**\n\nI've just finished the refactoring for `FinderApp`, `PhotosApp`, `CalendarApp`, and `NotesApp` into individual component files. Now, I'm focusing intently on the `Browser` application. I'm focusing on the input functionality: enabling typing, updating the URL on Enter, and displaying a loading state while fetching the content. Also, I've added a basic URL validation step. Next, I plan to improve the iframe load handling to manage potential errors and empty states gracefully, before incorporating simple back/forward buttons.\n\n\n**Improving History Management**\n\nI've just finished the core browser navigation with a functional address bar, including the necessary input handling, URL validation and iframe updates with loading indicators. Now I'm shifting focus to history management. I'm adding `back` and `forward` buttons and refining the logic for navigating history. I'm ensuring history accurately reflects user navigation actions, including new URLs, but also excluding any repeated entry.\n\n\n**Finalizing Browser Logic**\n\nI'm now implementing the history management within the browser, adding `goBack`, `goForward`, and `handleRefresh` methods. I'll test each navigation and the refresh feature. After this, I'll update the `App.tsx` imports. Next, I'll work on testing and refactoring.\n\n\n**Preparing App Imports**\n\nI've just cleaned up the imports in `App.tsx`, removing the `SystemApps` import and ensuring that `BrowserApp`, `FinderApp`, `PhotosApp`, `CalendarApp`, and `NotesApp` are correctly imported from their respective files within the `apps/` directory. Next, I'll review all the imports and verify they match the previous logic of the imports.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883189577,
+    "doneTimestamp": 1763883227055
+  },
+  {
+    "id": 9,
+    "author": "model",
+    "payload": {
+      "type": "text",
+      "text": "The requested changes involve refactoring the monolith `SystemApps.tsx` into individual app components and enhancing the `BrowserApp` to be more functional.\n\nHere is the plan:\n1.  **Refactor**: Create `apps/Finder.tsx`, `apps/Photos.tsx`, `apps/Calendar.tsx`, and `apps/Notes.tsx` with the code previously in `SystemApps.tsx`.\n2.  **Enhance Browser**: Update `apps/Browser.tsx` to handle URL inputs, history navigation (back/forward), and smart URL formatting (auto-adding https:// or searching).\n3.  **Cleanup**: Update `App.tsx` to import from the new files and update `apps/SystemApps.tsx` to be empty/deprecated (or effectively removed by not being used).\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883227055,
+    "doneTimestamp": 1763883227056
+  },
+  {
+    "id": 10,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "apps/Finder.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "New Finder application component."
+        },
+        {
+          "path": "apps/Photos.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "New Photos application component."
+        },
+        {
+          "path": "apps/Calendar.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "New Calendar application component."
+        },
+        {
+          "path": "apps/Notes.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "New Notes application component."
+        },
+        {
+          "path": "apps/Browser.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Enhanced Browser with full navigation and address bar support"
+        },
+        {
+          "path": "apps/SystemApps.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Deprecated file, emptying content to avoid duplication."
+        },
+        {
+          "path": "App.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Import system apps from individual files."
+        }
+      ]
+    },
+    "createdTimestamp": 1763883227854,
+    "doneTimestamp": 1763883240348
+  },
+  {
+    "id": 11,
+    "author": "model",
+    "payload": {
+      "type": "fixingErrors",
+      "diagnostics": [
+        {
+          "Nya": "components/MenuBar.tsx",
+          "message": "Module '\"lucide-react\"' has no exported member 'Control'.",
+          "line": 2,
+          "column": 40
+        }
+      ]
+    },
+    "createdTimestamp": 1763883312948,
+    "doneTimestamp": 1763883354489
+  },
+  {
+    "id": 12,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Analyzing the Import Error**\n\nI'm currently focused on the `MenuBar.tsx` file, trying to pinpoint why it's complaining about the `lucide-react` import. It seems like the `Control` icon isn't being exposed by the library. I'm double-checking the imports and the library's documentation to see if there's a typo, an outdated version, or maybe a different import path I should be using. This should be a quick fix.\n\n\n**Examining Icon Usage**\n\nI've moved on to the actual usage of the imported icons in `MenuBar.tsx`. It turns out `Control` isn't used in the JSX at all.  It seems the icon was imported but not actually rendered, which might be a leftover from earlier development. I'm thinking I can just remove it from the import statement.  Otherwise, I will introduce `SlidersHorizontal` or `Settings2` icons if the intention was a \"Control Center\" or settings shortcut.  I'm verifying that the file still renders correctly without the unused import.\n\n\n**Reviewing Icon Placement**\n\nI'm now revisiting the `MenuBar.tsx` file, specifically the icon usage. It seems the `Control` icon import is extraneous as it's not being rendered. Analyzing the typical macOS menu bar, I suspect the intention was likely a Control Center-like icon. I'm exploring potential replacements from `lucide-react`, such as `SlidersHorizontal`, `Settings2`, or `ToggleRight`, to align better with conventional UI/UX practices. Alternatively, since it is not used, I can remove the icon entirely and verify the file still works.\n\n\n**Resolving Unused Import**\n\nI've determined that the `Control` icon import in `MenuBar.tsx` is completely unnecessary as it is not utilized in the JSX. The problem is resolved by removing it from the import statement. It appears to be an unused leftover, which means the import can be removed, and all will still render successfully.\n\n\n**Verifying the Solution**\n\nI've made the code change in `components/MenuBar.tsx` by removing the unused `Control` import from `lucide-react`. I re-examined the file for any other instances of `Control`, but it wasn't used anywhere in the file. I have verified that no other file uses Control. The fix is now in place. It's safe to proceed now.\n\n\n**Updating Date Display**\n\nI'm now focusing on the `MenuBar.tsx` file and specifically the date display functionality. I'm taking a close look at the `formatDate` function to make sure it's returning the date in a user-friendly format. The goal is to make it consistent with conventional macOS menu bar date formats. Also, I'm checking the time display function too.\n\n**Reformatting the Date**\n\nI'm deep into the `MenuBar.tsx` file, specifically the `formatDate` function. I've switched gears to formatting the date string to a more standardized style. It seems like \"en-US\" locale is best for now. I'm exploring the `toLocaleDateString` options, aiming for a short weekday, short month, and numeric day display. The code is almost complete.\n\n\n**Adjusting Menu Options**\n\nI'm now revisiting the `MenuBar.tsx` file's Apple menu. I'm focusing on refining the menu items for a better user experience.  I'm reviewing the existing buttons, and evaluating their relevance and clarity. I'll make sure each button performs its intended action properly. I'm also considering the ideal order for the options.\n\n\n**Refining Apple Menu Items**\n\nI'm now zeroing in on the Apple menu items in `MenuBar.tsx`, specifically the \"Lock Screen\" option. I noticed that the button is inside of a `div` element. I'm taking a close look at it to make sure it follows proper semantics and coding practices. I want to make sure it functions as intended. The \"Lock Screen\" action is essential for user security and should be clearly labeled and readily accessible. I'm verifying the onClick function as well.\n\n\n**Confirming Unused Icon**\n\nI've re-examined the code in `MenuBar.tsx` again. I can confirm the `Control` icon isn't utilized anywhere, neither in the render section nor in any event handlers. This means it's safe to remove the import without affecting the functionality of the component or application. This saves space and improves the code's clarity.\n\n\n**Constructing the XML**\n\nI'm now generating the XML to describe the code change. I'm focusing on providing clear information about the unnecessary Control icon import and its removal. I want the XML to reflect the nature of the change and the component involved. I'll make sure the XML document is structured clearly.\n\n\n**Revising Menu Structure**\n\nI'm now adjusting the code that displays the time and date in `MenuBar.tsx`. I'm using the functions `formatTime` and `formatDate` within the component's render method to display the formatted date and time to the user. I'm verifying the display layout is visually appealing. I'm also reviewing the functions themselves to ensure that the date and time strings are correctly formatted.\n\n\n\n**Optimizing Menu Spacing**\n\nI'm now revising the layout of the Apple menu, specifically the menu items in `MenuBar.tsx`. I'm taking a close look at the spacing between the different options. My goal is to improve the overall appearance and enhance the user experience by providing more breathing room between menu items for easier readability and selection. I'm aiming for a visually appealing and organized menu structure.\n\n\n**Prioritizing Menu Appearance**\n\nI'm now focusing on the Apple menu. I'm taking a close look at the positioning of the menu items in the `MenuBar.tsx` file to get the spacing just right. I want to make sure the menu options are aligned well. I'm now evaluating each menu entry to improve its position and spacing to create a visually appealing user experience.\n\n**Evaluating Menu Aesthetics**\n\nI'm now zeroing in on the layout of the menu bar, specifically the spacing and alignment of menu entries in `MenuBar.tsx`. I'm closely examining the distribution of horizontal space (`space-x-*`) and vertical alignment (`items-center`) to create a balanced visual presentation. The goal is to ensure a clean and intuitive user interface by adjusting spacing and grouping elements logically.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883320735,
+    "doneTimestamp": 1763883354489
+  },
+  {
+    "id": 13,
+    "author": "model",
+    "payload": {
+      "type": "text",
+      "text": "<!-- Removing 'Control' from import since it is not exported by 'lucide-react' and not used in the code. -->\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883354489,
+    "doneTimestamp": 1763883354490
+  },
+  {
+    "id": 14,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "components/MenuBar.tsx",
+          "generationType": 2,
+          "isDone": true,
+          "description": "Remove unused Control import which does not exist in lucide-react"
+        }
+      ]
+    },
+    "createdTimestamp": 1763883354490,
+    "doneTimestamp": 1763883365404
+  },
+  {
+    "id": 16,
+    "author": "user",
+    "payload": {
+      "type": "text",
+      "text": "请你实现 About this Mac 。 配置是 32G M5处理器",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883552259
+  },
+  {
+    "id": 17,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Exploring \"About This Mac\"**\n\nOkay, so I'm pivoting from a simple alert in `components/MenuBar.tsx`. I'm starting to think about how to actually display \"About This Mac\" details. I'm considering using a modal or a dedicated page that would mirror the information seen in a real Mac. The goal is to show the version, build details, and perhaps credits, just like the real thing. I'm brainstorming the best way to structure and format this.\n\n\n**Constructing the \"About\" Window**\n\nI'm now concretely designing the \"About This Mac\" window. I've updated `types.ts` to include `AppId.ABOUT`, and I'm currently fleshing out `constants.tsx` with configuration details. I'm focusing on a small, fixed-size window, aiming for a visual match to the standard macOS look.  The goal is to properly render the hardware config, including 32G RAM and M5 processor. Next up, the `apps/About.tsx` component needs to be built.\n\n\n**Designing the UI Elements**\n\nOkay, the \"About This Mac\" interface is coming together. I'm focusing on those specific details: a large logo, \"MacWeb OS\" title, version, chip, memory, and startup disk. Buttons for \"More Info,\" \"Display Report,\" and \"Storage\" are planned. I'm now integrating `AboutApp` into `App.tsx` and updating `handleAppleMenu` to open the \"About\" window using `AppId.ABOUT`, which is a logical move given its window-like behavior. This includes updating `MenuBar.tsx` to handle the new app ID correctly.\n\n\n**Finalizing Window Details**\n\nI'm now integrating the remaining details for the \"About This Mac\" window. I've successfully added the memory (32GB) and am considering how to handle the serial number.  I'm sticking with a minimalist layout. The macOS buttons are also now incorporated, and I'm updating `Dock.tsx` to ensure `AppId.ABOUT` doesn't appear in the dock by default. The `handleAppleMenu` is directing to this app correctly.\n\n\n**Clarifying Dock Behavior**\n\nI've realized that the \"About This Mac\" window's behavior, in my simulation, aligns best with its current implementation: it opens but doesn't persist in the dock. The dock's static list doesn't include it. Modifying this would be extra work and might not be true to the user's expectations. I'll maintain the existing logic for now, leaving it as a non-persistent, modal-style window, which simplifies things. It makes the window function more like it does in macOS; it's a stand alone window controlled by the system.\n\n\n**Refining Window Data**\n\nI'm now incorporating specific details for the \"About This Mac\" window. The startup disk will display as \"Macintosh HD,\" and I'll include the serial number: \"W0RW3B0S1M.\"  I've also added the required \"More Info...\" and \"Software Update...\" buttons at the bottom for a more complete experience.\n\n\n**Incorporating `About.tsx` Details**\n\nI'm now integrating the visual details from `About.tsx` directly. I've focused on rendering the logo, OS details, and model. I am finalizing how to include and display the model, and then I will begin focusing on the 'More Info...' button functionality.\n\n\n**Detailing the Hardware Specs**\n\nI've integrated the hardware specifications directly into the \"About This Mac\" window. Specifically, the chip displays as \"Apple M5,\" the memory shows \"32 GB,\" and I've added the serial number: \"X02K9L1M5P\". I have also added and incorporated the \"More Info...\" and \"Storage Settings...\" buttons at the bottom. The next step is to add functionality to these buttons.\n\n\n**Finalizing the About App**\n\nI've integrated `AboutApp` into `App.tsx` and updated `constants.tsx` with the necessary configurations. I've chosen the `Apple` icon for the menu and resolved the import conflicts. I'm focusing on window size to replicate the macOS \"About\" window as closely as possible. The goal is to make it as true to the original as I can. Now I just need to verify that it functions as expected and looks right.\n\n\n**Building the Window's Code**\n\nI'm now building the code for the \"About This Mac\" window. I'm focusing on simplicity and setting a small, default window size, prioritizing a functional display. The goal is to make it feel responsive and accurate. I'm working on the design and code as one unit.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883552259,
+    "doneTimestamp": 1763883593040
+  },
+  {
+    "id": 18,
+    "author": "model",
+    "payload": {
+      "type": "text",
+      "text": "To implement the \"About This Mac\" functionality with the specified configuration (32G RAM, M5 Processor), I will:\n\n1.  **Create a new `apps/About.tsx` component** that displays the system information with the required specs.\n2.  **Update `types.ts`** to include the `ABOUT` app ID.\n3.  **Update `constants.tsx`** to define the window configuration (icon, title, size) for the About window.\n4.  **Update `App.tsx`** to handle the \"About This Mac\" menu action and render the new component.\n\nHere are the changes:\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883593040,
+    "doneTimestamp": 1763883593040
+  },
+  {
+    "id": 19,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "types.ts",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Add ABOUT to AppId enum"
+        },
+        {
+          "path": "constants.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Add configuration for About This Mac window"
+        },
+        {
+          "path": "apps/About.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "New About App component"
+        },
+        {
+          "path": "App.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Integrate About window logic"
+        }
+      ]
+    },
+    "createdTimestamp": 1763883593093,
+    "doneTimestamp": 1763883595510
+  },
+  {
+    "id": 21,
+    "author": "user",
+    "payload": {
+      "type": "text",
+      "text": "About this Mac 不应该显示在启动台的app里面",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883888733
+  },
+  {
+    "id": 22,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Eliminating App Visibility**\n\nI'm currently working on removing \"About This Mac\" from the Launchpad app list, and have made some progress. I've updated `Launchpad.tsx` to exclude `AppId.ABOUT` from the iteration, which should prevent it from appearing. I'm focusing on ensuring this change doesn't introduce any unforeseen side effects.\n\n\n**Confirming Exclusion of App**\n\nI've verified that `components/Launchpad.tsx` is the correct file. I'm focusing on excluding \"About This Mac\" by updating the filter condition to exclude `AppId.ABOUT`. I'm committed to adhering to the user's specific request, and will ensure this change is implemented directly.\n\n\n**Adjusting Launchpad Filtering**\n\nI've examined the `constants.tsx` file and noticed that `TRASH` is included in `APP_CONFIGS`. My goal now is to modify the Launchpad component to reflect the desired exclusion, just for `AppId.ABOUT`. I'm going to update the filtering logic within `Launchpad.tsx`, specifically to exclude `AppId.ABOUT` from the displayed apps. While `TRASH` is also arguably special, I'll adhere strictly to the user's explicit request. This should directly address the original requirement. I'm focusing on preserving the existing behavior while making this targeted adjustment.\n\n\n**Refining App Filtering Logic**\n\nI've decided to refine the filtering logic in `Launchpad.tsx` to align precisely with the user's initial request. My focus is now exclusively on removing `AppId.ABOUT`. I'm going to update the filter condition in the `Launchpad.tsx` file to explicitly exclude `AppId.ABOUT` from the list of displayed applications. I'm prioritizing accuracy and adherence to the user's specification above all else.\n\n\n**Updating App Exclusion List**\n\nI've made the necessary changes to `Launchpad.tsx`, adding an explicit exclusion for `AppId.TRASH` in addition to `AppId.ABOUT` and `AppId.LAUNCHPAD`. This completes the filtering logic, ensuring the Launchpad list accurately reflects the desired set of applications. Now I'm shifting my focus to testing these changes thoroughly.\n\n\n**Incorporating Search Functionality**\n\nI'm now integrating a search bar into the Launchpad UI to enable app filtering by name. I've added the necessary input field and search icon. I'm focusing on connecting this input to the application data, to filter results in real time. I'll test the new search function thoroughly to confirm it's working as expected.\n\n\n**Implementing App Icons and Names**\n\nI've integrated the app icons and names into the Launchpad view. I've updated the JSX structure to include `div` elements for styling, and made sure to apply `transition-transform` for a smooth hover effect. I'm satisfied with the current implementation and will continue improving the overall visual appeal. I've also double-checked the imports to confirm that everything is correct.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883888733,
+    "doneTimestamp": 1763883921882
+  },
+  {
+    "id": 23,
+    "author": "model",
+    "payload": {
+      "type": "text",
+      "text": "To address your request, I will modify `components/Launchpad.tsx` to exclude the \"About This Mac\" app (and the Trash can) from the list of applications displayed in the Launchpad grid.\n\n# Updated files:\n\n## components/Launchpad.tsx\n\nUpdated the filtering logic to exclude `AppId.ABOUT` and `AppId.TRASH` from the visible apps list.\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763883921883,
+    "doneTimestamp": 1763883921883
+  },
+  {
+    "id": 24,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "components/Launchpad.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Exclude About app and Trash from Launchpad app grid"
+        }
+      ]
+    },
+    "createdTimestamp": 1763883921999,
+    "doneTimestamp": 1763883928563
+  },
+  {
+    "id": 26,
+    "author": "user",
+    "payload": {
+      "type": "textWithMedia",
+      "text": "启动台 谷歌浏览器 的应用名字显示出现了换行，而且不美观，请你修改，用一行显示\n",
+      "files": [
+        "{\"name\":\"image.png\",\"type\":\"image/png\",\"size\":41741,\"lastModified\":1763883960550,\"data\":\"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\"}"
+      ],
+      "fileUploads": [],
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884019491
+  },
+  {
+    "id": 27,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Analyzing App Name Wrapping**\n\nI'm currently looking into how the \"Google Chrome\" app name wraps in the Launchpad, which is messing up the display. I'm focusing on the `Launchpad.tsx` file and will adjust text styling to keep the name on a single line. This should prevent the unsightly line break and clean up the visual presentation.\n\n\n**Improving Text Wrapping in Launchpad**\n\nI'm revisiting the `Launchpad.tsx` file, and I've confirmed the \"Google Chrome\" issue stems from wrapping within its container. The key is in the app name span, where I'll add `whitespace-nowrap` to force a single line. This initial fix should resolve the ugly line break. I've also noted other display issues might also require more extensive adjustments to the text layout.\n\n\n**Refining the Text Wrap Fix**\n\nMy focus is to ensure the \"Google Chrome\" text stays on a single line. I've pinpointed the `Launchpad.tsx` file and added `whitespace-nowrap` to the app name span. I'm moving beyond just the immediate fix and ensuring there are no other issues by cross-checking the `constants.tsx` file for possible adjustments. I'm proceeding to apply the proposed style changes.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884019491,
+    "doneTimestamp": 1763884041674
+  },
+  {
+    "id": 28,
+    "author": "model",
+    "payload": {
+      "type": "text",
+      "text": "To fix the issue where \"Google Chrome\" wraps to a new line in the Launchpad, I will add `whitespace-nowrap` to the app name label in the Launchpad component. This ensures the text stays on a single line.\n\n# Updated files:\n\n## components/Launchpad.tsx\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884041674,
+    "doneTimestamp": 1763884041674
+  },
+  {
+    "id": 29,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "components/Launchpad.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Force app names to display on a single line using whitespace-nowrap"
+        }
+      ]
+    },
+    "createdTimestamp": 1763884041676,
+    "doneTimestamp": 1763884047988
+  },
+  {
+    "id": 31,
+    "author": "user",
+    "payload": {
+      "type": "text",
+      "text": "请你实现真实的用户密码登录 默认用户名密码是 admin/admin\n设置里面可以修改用户密码，密码存浏览器localstorage里面",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884617198
+  },
+  {
+    "id": 32,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Defining User Authentication**\n\nI'm working on the initial login system, focusing on a secure setup with \"admin\" as the default username and password. After that, my priority is enabling password modification directly within the Settings application. Currently, I'm considering the best method to securely store the new password.\n\n\n**Analyzing Storage Solutions**\n\nI've been examining different storage options, and I'm leaning toward leveraging `localStorage` for now. I'm focusing on the login system and implementing basic password verification within the lock screen functionality. My next step is to integrate a password change feature in `SettingsApp.tsx`, where users can modify their passwords securely. I'm considering adding a new section in the sidebar for \"Users & Groups\" or \"Lock Screen\" to streamline password management.\n\n\n**Developing Settings Integration**\n\nI'm working on the `SettingsApp` structure now. My plan is to make the sidebar interactive, so the user can switch between \"Wallpaper\" and \"Password/User\" settings. I'll need to add state for the active tab to manage this. I'm also preparing to add fields for current and new passwords to the password change UI.\n\n\n**Implementing Password Verification**\n\nI'm now focusing on implementing password verification within the `App.tsx` file. I've realized that the `SettingsApp` needs a function to verify the \"Old Password\" entered by the user. I've decided to pass a `changePassword` function from `App.tsx` to `SettingsApp` which takes the old and new passwords. This approach aligns with my aim of improving the user experience and maintain good security principles. I also am making minor changes to `types.ts`, and will start by updating `App.tsx` now to handle this authentication logic.\n\n\n**Prioritizing Authentication Flow**\n\nMy focus has shifted to the authentication flow. I'm actively developing `Settings.tsx` to include the password change UI and tab switching functionality for the sidebar. I'm also ensuring the sidebar state is managed effectively. My next step involves building a robust lock screen experience within `App.tsx` and refining the authentication logic. I'm currently prioritizing these key elements.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884617198,
+    "doneTimestamp": 1763884645213
+  },
+  {
+    "id": 33,
+    "author": "model",
+    "payload": {
+      "type": "text",
+      "text": "To implement real user authentication with password management, I will update `App.tsx` to handle the login logic and `apps/Settings.tsx` to allow password changes.\n\nHere is the plan:\n1.  **App.tsx**: Add state for the password (initialized from localStorage or default 'admin'). Implement a real login check on the lock screen. Pass a `handleChangePassword` function to the Settings app.\n2.  **apps/Settings.tsx**: Make the sidebar functional to switch between \"Wallpaper\" and a new \"Users & Groups\" section. Implement the form to change the password, which verifies the old password before updating.\n\n# Updated files:\n\n## App.tsx\n\n- Added `password` state management using `localStorage`.\n- Implemented real authentication check in the Lock Screen.\n- Added visual feedback (red border/shake) for incorrect passwords.\n- Passed `changePassword` callback to `SettingsApp`.\n\n## apps/Settings.tsx\n\n- Added state for active sidebar tab.\n- Added \"Users & Groups\" tab content.\n- Implemented Password Change form with validation (Old password check, New password match).\n- Made Sidebar interactive.\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884645213,
+    "doneTimestamp": 1763884645214
+  },
+  {
+    "id": 34,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "App.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Implement real login logic and password state management"
+        },
+        {
+          "path": "apps/Settings.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Add Password Change UI and make Sidebar functional"
+        }
+      ]
+    },
+    "createdTimestamp": 1763884647383,
+    "doneTimestamp": 1763884670473
+  },
+  {
+    "id": 36,
+    "author": "user",
+    "payload": {
+      "type": "text",
+      "text": "目前设置里面 密码修改的输入框可以聚焦  输入密码没有显示。应该显示 点 来隐藏真实密码 。请你修改\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884878278
+  },
+  {
+    "id": 37,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Debugging Input Mask**\n\nI've been digging into the `SettingsApp` component, specifically the password input fields. The focus issue is confirmed, but the \"dot\" masking isn't working as intended. I'm scrutinizing the existing `apps` code to see if there's a misconfiguration or a missing dependency related to input masking. I'll need to check the event listeners on the inputs to ensure they're correctly triggering the mask application.\n\n\n**Reviewing Password Field Behavior**\n\nMy recent investigation of the `SettingsApp` led me to examine the `input` element configuration. Initially, I noted the `type=\"password\"` attribute is correctly applied. The issue of missing \"dots\" is now pointing towards a potential CSS override or a problem with state management. I am thinking the issue might be white text color or a failure in updating the `value` attribute. Next, I'll check how the state variables `oldPassword`, `newPassword`, and `confirmPassword` are updated on input change within the component.\n\n\n**Examining CSS Inheritance**\n\nI'm now focusing on the CSS and the possibility of `user-select: none;` inheritance. While the state updates seem straightforward, the global style applied to the `body` is now my main concern. I'm thinking the `user-select: none;` might have an unexpected impact, particularly in specific browsers. I'm considering that `user-select: text` might be a necessary override on the input. Examining the input's CSS classes in `Settings.tsx`, I'm looking for clues about how `user-select` is handled, if at all.\n\n\n**Diagnosing Text Visibility**\n\nI'm now thinking the text color might be the culprit. I initially presumed it defaulted to black, but I remembered a `user-select: none` issue. Adding `select-text` (Tailwind) or `user-select: text` to the input fields should fix it. Now, I will look at the `SettingsApp` code and then add the fix.\n\n\n**Addressing Input Field Usability**\n\nMy current focus is on adding the `text-gray-900` class and `select-text` (Tailwind) to the password input fields in `Settings.tsx`. This addresses the potential text color and `user-select` issue stemming from the global `user-select: none`. Now, I'm confident that the inputs should behave as expected and be visible in any environment, even in those mimicking operating system simulations. I'll test the changes after this is complete.\n\n\n**Fixing Password Field Display**\n\nI've added the `text-gray-900` class and `select-text` (Tailwind) to the password input fields in `Settings.tsx`, addressing both the text color and `user-select` issues. I also examined the `App.tsx` login input and, since no specific issues were reported, I haven't made changes there for now. I'm focusing on the `SettingsApp` component and confirming the fix with the new changes in `Settings.tsx` to ensure password visibility in all environments. I will be doing extensive tests after this.\n\n\n**Implementing Password Visibility Fix**\n\nI've reviewed `Settings.tsx` and confirmed the addition of `text-gray-900` and `select-text` (Tailwind) to the password input field's `className`. I'm now confident that this will correct the text visibility and `user-select` issue. My next step will be to test the updated `SettingsApp` component thoroughly, ensuring password input is visible and selectable. I will pay close attention to the input's behavior across different screen sizes and browsers.\n\n\n**Testing Password Input Enhancements**\n\nI've now updated the password input fields within `Settings.tsx` to include both `text-gray-900` and `select-text` Tailwind classes, addressing the reported invisibility issue. I'm now setting up a series of tests to confirm that these modifications ensure proper text visibility and user interaction across various screen sizes and browsers. Additionally, I'll pay close attention to the input's state changes on focus and blur.\n\n\n**Analyzing Color & Selectability**\n\nI am now focusing on the background color of the `SettingsApp` and its relationship with the global `user-select: none`. Since the Settings root is `bg-gray-100` and the Main Content is `bg-white`, this could explain why the text might appear invisible if the text color wasn't explicitly set. I am considering the global `user-select: none` as the primary cause for preventing the text from showing. To fix this, I intend to add specific text color to the input fields and add `user-select: text` in `apps/Settings.tsx`.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884878278,
+    "doneTimestamp": 1763884916668
+  },
+  {
+    "id": 38,
+    "author": "model",
+    "payload": {
+      "type": "text",
+      "text": "To address the issue where password inputs in the Settings app are not displaying the dots (masked characters) or allowing focus correctly, I will add the `select-text` class to override the global `user-select: none` style. I will also explicitly set `text-gray-900` to ensure the text (or dots) are visible against the white background.\n\n# Updated files:\n\n## apps/Settings.tsx\n\n- Added `select-text` and `text-gray-900` classes to all password input fields to ensure text is visible and inputs are interactive despite global styles.\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763884916668,
+    "doneTimestamp": 1763884916668
+  },
+  {
+    "id": 39,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "apps/Settings.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Add select-text and text-gray-900 to password inputs to fix visibility and interaction issues caused by global user-select:none"
+        }
+      ]
+    },
+    "createdTimestamp": 1763884916772,
+    "doneTimestamp": 1763884945986
+  },
+  {
+    "id": 41,
+    "author": "user",
+    "payload": {
+      "type": "text",
+      "text": "请你实现启动图的应用名字搜索功能",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763885159530
+  },
+  {
+    "id": 42,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Defining Search Logic**\n\nI'm currently focused on defining the search logic for the Launchpad component. I've realized I need to add state to track the search query. My next step is to figure out how to filter the apps based on this query.  I'm also considering how to make the search case-insensitive and fuzzy for a better user experience.\n\n\n**Refining Filtering Strategy**\n\nI'm now implementing the search query filtering within `Launchpad.tsx`. I've added state for the search query, and now I'm updating the filtering logic to use it, aiming for an initial implementation before enhancing it. I'm also preparing to update the input field to reflect the new search state.\n\n\n**Updating UI Implementation**\n\nI've been working on the UI implementation of the search bar within the Launchpad. I've successfully incorporated the input field with its placeholder and the search icon. I've also established the basic styling for the input, including its background, text color, and focus states. I'm now focusing on integrating this input with the search query state and its associated filtering mechanism.\n\n\n**Implementing Search Functionality**\n\nI've integrated the `searchQuery` state within the `Launchpad` component and updated the filtering logic. Now, apps are filtered dynamically as the user types, excluding Launchpad, About, and Trash apps. The search is case-insensitive, utilizing `.toLowerCase()` for a more inclusive search. I'm focusing on refining the responsiveness of the input field to reflect the live search updates.\n\n\n**Examining State Persistence**\n\nI'm presently investigating the potential for state reset within the Launchpad. I've realized the `isOpen` prop dictates component mounting/unmounting. A return of `null` causes state to reset. I've confirmed that `App.tsx` conditionally renders it using `isOpen`. Even though it renders unconditionally in `App.tsx`, it is being unmounted and remounted frequently. I'm focusing on ensuring search state persistence.\n\n\n**Considering State Management**\n\nMy attention has shifted to state management for the Launchpad search. I'm examining how the `isOpen` prop impacts search query persistence. It seems React's handling of `null` returns doesn't *always* reset state, but for a good UX, I've decided to reset the search query when Launchpad opens. I'll use a `useEffect` hook to clear the search when `isOpen` becomes `true`.\n\n\n**Modifying Component Structure**\n\nI'm now revising the `components/Launchpad.tsx` file, aiming to improve its overall structure. I'm focusing on organizing the component into more manageable sections to enhance readability and maintainability. This includes separating the UI elements from the business logic, and potentially creating helper functions for clarity.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763885159530,
+    "doneTimestamp": 1763885187595
+  },
+  {
+    "id": 43,
+    "author": "model",
+    "payload": {
+      "type": "text",
+      "text": "To implement the search functionality in the Launchpad, I will update `components/Launchpad.tsx` to include state for the search query and filter the displayed applications based on the input. I will also ensure the search resets every time the Launchpad is opened.\n\n# Updated files:\n\n## components/Launchpad.tsx\n\n- Added `useState` for `searchQuery`.\n- Added `useEffect` to reset the search query when Launchpad opens.\n- Updated the filtering logic to check if the app name includes the search text.\n- Bound the input field to the `searchQuery` state.\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": 1763885187595,
+    "doneTimestamp": 1763885187679
+  },
+  {
+    "id": 44,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "components/Launchpad.tsx",
+          "generationType": 1,
+          "isDone": true,
+          "description": "Implement search functionality in Launchpad"
+        }
+      ]
+    },
+    "createdTimestamp": 1763885189379,
+    "doneTimestamp": 1763885196565
+  }
+]

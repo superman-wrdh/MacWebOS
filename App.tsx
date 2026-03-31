@@ -12,6 +12,7 @@ import { PhotosApp } from './apps/Photos';
 import { CalendarApp } from './apps/Calendar';
 import { NotesApp } from './apps/Notes';
 import { AboutApp } from './apps/About';
+import { Live2D } from './components/Live2D';
 import { Lock, ArrowRight } from 'lucide-react';
 
 export default function App() {
@@ -204,6 +205,9 @@ export default function App() {
       
       {/* Desktop Area - Click to clear focus could go here */}
       <div className="absolute inset-0 top-8 bottom-20" onClick={() => setActiveWindowId(null)}>
+        {/* Live2D Model */}
+        <Live2D />
+
         {/* Windows */}
         {windows.map(win => (
             <Window

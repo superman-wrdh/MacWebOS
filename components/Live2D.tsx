@@ -20,23 +20,25 @@ interface Live2DProps {
 export const Live2D: React.FC<Live2DProps> = ({ 
   modelUrl = 'https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/shizuku/shizuku.model.json' 
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [model, setModel] = useState<Live2DModel | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: window.innerWidth - 250, y: window.innerHeight - 400 });
   const dragOffset = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!containerRef.current) return;
 
+    let isDestroyed = false;
     let app: PIXI.Application;
+
     try {
       app = new PIXI.Application({
-        view: canvasRef.current,
         autoStart: true,
         backgroundAlpha: 0,
-        resizeTo: canvasRef.current.parentElement || undefined,
+        resizeTo: containerRef.current,
       });
+      containerRef.current.appendChild(app.view as HTMLCanvasElement);
     } catch (e) {
       console.error("WebGL is not supported or failed to initialize PIXI:", e);
       return;
@@ -45,6 +47,11 @@ export const Live2D: React.FC<Live2DProps> = ({
     const loadModel = async () => {
       try {
         const live2dModel = await Live2DModel.from(modelUrl);
+        if (isDestroyed) {
+          live2dModel.destroy();
+          return;
+        }
+        
         app.stage.addChild(live2dModel);
 
         // Scale and position
@@ -71,6 +78,7 @@ export const Live2D: React.FC<Live2DProps> = ({
     loadModel();
 
     return () => {
+      isDestroyed = true;
       app.destroy(true, { children: true, texture: true, baseTexture: true });
     };
   }, [modelUrl]);
@@ -120,8 +128,8 @@ export const Live2D: React.FC<Live2DProps> = ({
       }}
       onMouseDown={handleMouseDown}
     >
-      <canvas 
-        ref={canvasRef} 
+      <div 
+        ref={containerRef} 
         style={{ width: '100%', height: '100%' }}
       />
     </div>

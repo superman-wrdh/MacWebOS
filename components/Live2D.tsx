@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { Live2DModel } from 'pixi-live2d-display';
 
+// Fix for shader error in some environments
+(PIXI as any).settings.PRECISION_FRAGMENT = 'highp';
+(PIXI as any).settings.SPRITE_MAX_TEXTURES = 16;
+
 // Register PIXI to Live2DModel
 (window as any).PIXI = PIXI;
 
@@ -10,12 +14,12 @@ interface Live2DProps {
 }
 
 export const Live2D: React.FC<Live2DProps> = ({ 
-  modelUrl = 'https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/hiyori/hiyori_pro_t10.model3.json' 
+  modelUrl = 'https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/shizuku/shizuku.model.json' 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [model, setModel] = useState<Live2DModel | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: window.innerWidth - 350, y: window.innerHeight - 500 });
+  const [position, setPosition] = useState({ x: window.innerWidth - 250, y: window.innerHeight - 400 });
   const dragOffset = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export const Live2D: React.FC<Live2DProps> = ({
         app.stage.addChild(live2dModel);
 
         // Scale and position
-        const scale = 0.15;
+        const scale = 0.2;
         live2dModel.scale.set(scale);
         live2dModel.anchor.set(0.5, 0.5);
         live2dModel.x = app.screen.width / 2;
@@ -44,7 +48,7 @@ export const Live2D: React.FC<Live2DProps> = ({
         live2dModel.interactive = true;
         live2dModel.on('hit', (hitAreas) => {
           if (hitAreas.includes('body') || hitAreas.includes('Body')) {
-            live2dModel.motion('TapBody');
+            live2dModel.motion('tap_body');
           }
         });
 

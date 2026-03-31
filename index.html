@@ -51,6 +51,10 @@
 <link rel="stylesheet" href="/index.css">
 <script src="https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js"></script>
 <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+<script>
+  // 预先修复一些可能导致 PIXI 报错的全局环境问题
+  window.Live2DCubismCore = window.Live2DCubismCore || {};
+</script>
 </head>
   <body>
     <div id="root"></div>

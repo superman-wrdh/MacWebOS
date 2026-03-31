@@ -10,7 +10,8 @@ export enum AppId {
   APPSTORE = 'appstore',
   SETTINGS = 'settings',
   TRASH = 'trash',
-  ABOUT = 'about'
+  ABOUT = 'about',
+  LIVE2D_GUIDE = 'live2d_guide'
 }
 
 export interface WindowState {

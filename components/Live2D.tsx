@@ -10,7 +10,7 @@ interface Live2DProps {
 }
 
 export const Live2D: React.FC<Live2DProps> = ({ 
-  modelUrl = 'https://cdn.jsdelivr.net/gh/Eikanya/Live2d-model/v3/Hiyori/Hiyori.model3.json' 
+  modelUrl = 'https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/hiyori/hiyori_pro_t10.model3.json' 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [model, setModel] = useState<Live2DModel | null>(null);
@@ -34,8 +34,7 @@ export const Live2D: React.FC<Live2DProps> = ({
         app.stage.addChild(live2dModel);
 
         // Scale and position
-        // Hiyori model3 is usually larger, adjust scale accordingly
-        const scale = 0.12;
+        const scale = 0.15;
         live2dModel.scale.set(scale);
         live2dModel.anchor.set(0.5, 0.5);
         live2dModel.x = app.screen.width / 2;
@@ -44,7 +43,7 @@ export const Live2D: React.FC<Live2DProps> = ({
         // Interaction
         live2dModel.interactive = true;
         live2dModel.on('hit', (hitAreas) => {
-          if (hitAreas.includes('Body')) {
+          if (hitAreas.includes('body') || hitAreas.includes('Body')) {
             live2dModel.motion('TapBody');
           }
         });

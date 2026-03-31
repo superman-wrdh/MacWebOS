@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { Live2DModel } from 'pixi-live2d-display';
+import { Settings2, Minus, Plus } from 'lucide-react';
 
 // Fix for shader error in some environments
 // Remove PRECISION_FRAGMENT override as it can cause checkMaxIfStatementsInShader error on devices without highp support
@@ -24,6 +25,11 @@ export const Live2D: React.FC<Live2DProps> = ({
   const [model, setModel] = useState<Live2DModel | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: window.innerWidth - 250, y: window.innerHeight - 400 });
+  const [scale, setScale] = useState(() => {
+    const saved = localStorage.getItem('live2d-scale');
+    return saved ? parseFloat(saved) : 0.2;
+  });
+  const [showControls, setShowControls] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -54,8 +60,7 @@ export const Live2D: React.FC<Live2DProps> = ({
         
         app.stage.addChild(live2dModel);
 
-        // Scale and position
-        const scale = 0.2;
+        // Initial scale and position
         live2dModel.scale.set(scale);
         live2dModel.anchor.set(0.5, 0.5);
         live2dModel.x = app.screen.width / 2;
@@ -83,7 +88,18 @@ export const Live2D: React.FC<Live2DProps> = ({
     };
   }, [modelUrl]);
 
+  // Update scale when state changes
+  useEffect(() => {
+    if (model) {
+      model.scale.set(scale);
+      localStorage.setItem('live2d-scale', scale.toString());
+    }
+  }, [scale, model]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Don't start dragging if clicking on controls
+    if ((e.target as HTMLElement).closest('.controls-area')) return;
+
     setIsDragging(true);
     dragOffset.current = {
       x: e.clientX - position.x,
@@ -116,18 +132,51 @@ export const Live2D: React.FC<Live2DProps> = ({
     };
   }, [isDragging]);
 
+  const adjustScale = (delta: number) => {
+    setScale(prev => Math.max(0.05, Math.min(1.5, prev + delta)));
+  };
+
   return (
     <div 
-      className="absolute z-[1] cursor-grab active:cursor-grabbing"
+      className="absolute z-[1] cursor-grab active:cursor-grabbing group"
       style={{ 
         left: position.x, 
         top: position.y,
-        width: '300px',
-        height: '400px',
+        width: `${300 * (scale / 0.2)}px`,
+        height: `${400 * (scale / 0.2)}px`,
+        maxWidth: '80vw',
+        maxHeight: '80vh',
         pointerEvents: 'auto'
       }}
       onMouseDown={handleMouseDown}
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
     >
+      {/* Controls Overlay */}
+      <div className={`controls-area absolute top-0 right-0 flex flex-col gap-2 p-2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="bg-black/40 backdrop-blur-md rounded-full p-1.5 flex flex-col items-center gap-2 border border-white/10 shadow-lg">
+          <button 
+            onClick={() => adjustScale(0.05)}
+            className="p-1 hover:bg-white/20 rounded-full transition-colors text-white"
+            title="放大"
+          >
+            <Plus size={16} />
+          </button>
+          <div className="h-px w-4 bg-white/20" />
+          <button 
+            onClick={() => adjustScale(-0.05)}
+            className="p-1 hover:bg-white/20 rounded-full transition-colors text-white"
+            title="缩小"
+          >
+            <Minus size={16} />
+          </button>
+          <div className="h-px w-4 bg-white/20" />
+          <div className="text-[10px] font-bold text-white/80 select-none">
+            {Math.round(scale * 500)}%
+          </div>
+        </div>
+      </div>
+
       <div 
         ref={containerRef} 
         style={{ width: '100%', height: '100%' }}

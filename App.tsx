@@ -89,6 +89,16 @@ export default function App() {
     } else {
       // Create new window
       const config = APP_CONFIGS[id];
+      
+      let width = config.defaultWidth || 600;
+      let height = config.defaultHeight || 400;
+
+      // Special case for Live2D Settings: 70% of screen
+      if (id === AppId.LIVE2D_SETTINGS) {
+        width = Math.round(window.innerWidth * 0.7);
+        height = Math.round(window.innerHeight * 0.7);
+      }
+
       const newWindow: WindowState = {
         id,
         title: config.name,
@@ -96,7 +106,7 @@ export default function App() {
         isMinimized: false,
         zIndex: nextZIndex,
         position: { x: 0, y: 0 }, // Will be centered by Window component
-        size: { width: config.defaultWidth || 600, height: config.defaultHeight || 400 }
+        size: { width, height }
       };
       setWindows(prev => [...prev, newWindow]);
       setNextZIndex(prev => prev + 1);

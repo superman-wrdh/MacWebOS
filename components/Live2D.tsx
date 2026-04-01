@@ -24,12 +24,35 @@ export const Live2D: React.FC<Live2DProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [model, setModel] = useState<Live2DModel | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: window.innerWidth - 250, y: window.innerHeight - 400 });
   const [scale, setScale] = useState(() => {
     const saved = localStorage.getItem('live2d-scale');
     return saved ? parseFloat(saved) : 0.3;
   });
+  const [position, setPosition] = useState(() => {
+    const savedPos = localStorage.getItem('live2d-position');
+    if (savedPos) {
+      try {
+        return JSON.parse(savedPos);
+      } catch (e) {
+        console.error("Failed to parse saved position", e);
+      }
+    }
+    
+    // Default to center
+    const width = 600 * (scale / 0.3);
+    const height = 600 * (scale / 0.3);
+    return {
+      x: (window.innerWidth - width) / 2,
+      y: (window.innerHeight - height) / 2
+    };
+  });
   const dragOffset = useRef({ x: 0, y: 0 });
+  const positionRef = useRef(position);
+
+  // Update positionRef whenever position changes
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   // Listen for scale changes from settings app
   useEffect(() => {
@@ -150,6 +173,7 @@ export const Live2D: React.FC<Live2DProps> = ({
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      localStorage.setItem('live2d-position', JSON.stringify(positionRef.current));
     };
 
     if (isDragging) {

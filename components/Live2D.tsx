@@ -27,10 +27,18 @@ export const Live2D: React.FC<Live2DProps> = ({
   const [position, setPosition] = useState({ x: window.innerWidth - 250, y: window.innerHeight - 400 });
   const [scale, setScale] = useState(() => {
     const saved = localStorage.getItem('live2d-scale');
-    return saved ? parseFloat(saved) : 0.3; // Increased default scale from 0.2 to 0.3
+    return saved ? parseFloat(saved) : 0.3;
   });
-  const [showControls, setShowControls] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
+
+  // Listen for scale changes from settings app
+  useEffect(() => {
+    const handleScaleChange = (e: any) => {
+      if (e.detail) setScale(e.detail);
+    };
+    window.addEventListener('live2d-scale-change', handleScaleChange);
+    return () => window.removeEventListener('live2d-scale-change', handleScaleChange);
+  }, []);
 
   // Update scale and position when state changes
   useEffect(() => {
@@ -172,34 +180,7 @@ export const Live2D: React.FC<Live2DProps> = ({
         pointerEvents: 'auto'
       }}
       onMouseDown={handleMouseDown}
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => setShowControls(false)}
     >
-      {/* Controls Overlay */}
-      <div className={`controls-area absolute top-0 right-0 flex flex-col gap-2 p-2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="bg-black/40 backdrop-blur-md rounded-full p-1.5 flex flex-col items-center gap-2 border border-white/10 shadow-lg">
-          <button 
-            onClick={() => adjustScale(0.05)}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors text-white"
-            title="放大"
-          >
-            <Plus size={16} />
-          </button>
-          <div className="h-px w-4 bg-white/20" />
-          <button 
-            onClick={() => adjustScale(-0.05)}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors text-white"
-            title="缩小"
-          >
-            <Minus size={16} />
-          </button>
-          <div className="h-px w-4 bg-white/20" />
-          <div className="text-[10px] font-bold text-white/80 select-none">
-            {Math.round(scale * 500)}%
-          </div>
-        </div>
-      </div>
-
       <div 
         ref={containerRef} 
         style={{ width: '100%', height: '100%' }}

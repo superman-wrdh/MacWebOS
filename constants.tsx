@@ -11,7 +11,8 @@ import {
   Trash2,
   HardDrive,
   Info,
-  BookOpen
+  BookOpen,
+  Sliders
 } from 'lucide-react';
 import { AppId, AppConfig } from './types';
 
@@ -91,5 +92,12 @@ export const APP_CONFIGS: Record<AppId, AppConfig> = {
     icon: <div className="w-full h-full bg-gradient-to-br from-pink-400 to-rose-500 rounded-xl flex items-center justify-center text-white shadow-md border border-pink-300"><BookOpen size={24} /></div>,
     defaultWidth: 700,
     defaultHeight: 600
+  },
+  [AppId.LIVE2D_SETTINGS]: {
+    id: AppId.LIVE2D_SETTINGS,
+    name: '模型设置',
+    icon: <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-md border border-indigo-300"><Sliders size={24} /></div>,
+    defaultWidth: 350,
+    defaultHeight: 250
   }
 };

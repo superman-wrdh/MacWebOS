@@ -19,11 +19,12 @@ interface Live2DProps {
 }
 
 export const Live2D: React.FC<Live2DProps> = ({ 
-  modelUrl = 'https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/shizuku/shizuku.model.json' 
+  modelUrl: initialModelUrl = localStorage.getItem('live2d-current-url') || 'https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/shizuku/shizuku.model.json' 
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [model, setModel] = useState<Live2DModel | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [currentModelUrl, setCurrentModelUrl] = useState(initialModelUrl);
   const [scale, setScale] = useState(() => {
     const saved = localStorage.getItem('live2d-scale');
     return saved ? parseFloat(saved) : 0.3;
@@ -54,13 +55,20 @@ export const Live2D: React.FC<Live2DProps> = ({
     positionRef.current = position;
   }, [position]);
 
-  // Listen for scale changes from settings app
+  // Listen for scale and URL changes from settings app
   useEffect(() => {
     const handleScaleChange = (e: any) => {
       if (e.detail) setScale(e.detail);
     };
+    const handleUrlChange = (e: any) => {
+      if (e.detail) setCurrentModelUrl(e.detail);
+    };
     window.addEventListener('live2d-scale-change', handleScaleChange);
-    return () => window.removeEventListener('live2d-scale-change', handleScaleChange);
+    window.addEventListener('live2d-url-change', handleUrlChange);
+    return () => {
+      window.removeEventListener('live2d-scale-change', handleScaleChange);
+      window.removeEventListener('live2d-url-change', handleUrlChange);
+    };
   }, []);
 
   // Update scale and position when state changes
@@ -113,7 +121,7 @@ export const Live2D: React.FC<Live2DProps> = ({
 
     const loadModel = async () => {
       try {
-        const live2dModel = await Live2DModel.from(modelUrl);
+        const live2dModel = await Live2DModel.from(currentModelUrl);
         if (isDestroyed) {
           live2dModel.destroy();
           return;
@@ -148,7 +156,7 @@ export const Live2D: React.FC<Live2DProps> = ({
       app.destroy(true, { children: true, texture: true, baseTexture: true });
       delete (window as any).__PIXI_APP__;
     };
-  }, [modelUrl]);
+  }, [currentModelUrl]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Don't start dragging if clicking on controls

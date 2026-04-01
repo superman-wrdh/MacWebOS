@@ -27,10 +27,32 @@ export const Live2D: React.FC<Live2DProps> = ({
   const [position, setPosition] = useState({ x: window.innerWidth - 250, y: window.innerHeight - 400 });
   const [scale, setScale] = useState(() => {
     const saved = localStorage.getItem('live2d-scale');
-    return saved ? parseFloat(saved) : 0.2;
+    return saved ? parseFloat(saved) : 0.3; // Increased default scale from 0.2 to 0.3
   });
   const [showControls, setShowControls] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
+
+  // Update scale and position when state changes
+  useEffect(() => {
+    if (model && containerRef.current) {
+      model.scale.set(scale);
+      
+      // Re-center the model in the new container size
+      const app = (window as any).__PIXI_APP__;
+      if (app && app.renderer) {
+        // Force immediate resize of the renderer to match the new container size
+        // Using 600 as base to give even more room
+        const width = 600 * (scale / 0.3);
+        const height = 600 * (scale / 0.3);
+        app.renderer.resize(width, height);
+        
+        model.x = app.screen.width / 2;
+        model.y = app.screen.height / 2;
+      }
+
+      localStorage.setItem('live2d-scale', scale.toString());
+    }
+  }, [scale, model]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -39,11 +61,19 @@ export const Live2D: React.FC<Live2DProps> = ({
     let app: PIXI.Application;
 
     try {
+      const width = 600 * (scale / 0.3);
+      const height = 600 * (scale / 0.3);
+      
       app = new PIXI.Application({
         autoStart: true,
         backgroundAlpha: 0,
-        resizeTo: containerRef.current,
+        width: width,
+        height: height,
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
       });
+      (window as any).__PIXI_APP__ = app;
       containerRef.current.appendChild(app.view as HTMLCanvasElement);
     } catch (e) {
       console.error("WebGL is not supported or failed to initialize PIXI:", e);
@@ -85,16 +115,9 @@ export const Live2D: React.FC<Live2DProps> = ({
     return () => {
       isDestroyed = true;
       app.destroy(true, { children: true, texture: true, baseTexture: true });
+      delete (window as any).__PIXI_APP__;
     };
   }, [modelUrl]);
-
-  // Update scale when state changes
-  useEffect(() => {
-    if (model) {
-      model.scale.set(scale);
-      localStorage.setItem('live2d-scale', scale.toString());
-    }
-  }, [scale, model]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Don't start dragging if clicking on controls
@@ -133,7 +156,7 @@ export const Live2D: React.FC<Live2DProps> = ({
   }, [isDragging]);
 
   const adjustScale = (delta: number) => {
-    setScale(prev => Math.max(0.05, Math.min(1.5, prev + delta)));
+    setScale(prev => Math.max(0.1, Math.min(3.0, prev + delta)));
   };
 
   return (
@@ -142,10 +165,10 @@ export const Live2D: React.FC<Live2DProps> = ({
       style={{ 
         left: position.x, 
         top: position.y,
-        width: `${300 * (scale / 0.2)}px`,
-        height: `${400 * (scale / 0.2)}px`,
-        maxWidth: '80vw',
-        maxHeight: '80vh',
+        width: `${600 * (scale / 0.3)}px`,
+        height: `${600 * (scale / 0.3)}px`,
+        maxWidth: '95vw',
+        maxHeight: '95vh',
         pointerEvents: 'auto'
       }}
       onMouseDown={handleMouseDown}

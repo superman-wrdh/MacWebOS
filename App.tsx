@@ -39,71 +39,188 @@ export default function App() {
 
   // Voice Assistant State
   const [isVoiceConnected, setIsVoiceConnected] = useState(false);
+  const [isVoiceConnecting, setIsVoiceConnecting] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>([]);
   const [showVoiceText, setShowVoiceText] = useState(true);
+  const [currentVoice, setCurrentVoice] = useState('alloy');
+  
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
+  const audioStreamRef = useRef<MediaStream | null>(null);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const fetchVoiceToken = async () => {
+    try {
+      const response = await fetch('/api/v2/openai/realtime_token');
+      const result = await response.json();
+      if (result.code === 0 && result.data?.client_secret) {
+        return result.data.client_secret;
+      }
+      throw new Error(result.message || 'Failed to get token');
+    } catch (err) {
+      console.error('Error fetching token:', err);
+      throw err;
+    }
+  };
+
+  const connectVoice = async (voice: string, showText: boolean) => {
+    setIsVoiceConnecting(true);
+    setVoiceError(null);
+    setCurrentVoice(voice);
+    setShowVoiceText(showText);
+    
+    try {
+      const token = await fetchVoiceToken();
+      
+      // Get user media
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
+
+      // Create PeerConnection
+      const pc = new RTCPeerConnection();
+      peerConnectionRef.current = pc;
+
+      // Handle remote audio
+      const audioEl = document.createElement('audio');
+      audioEl.autoplay = true;
+      audioElRef.current = audioEl;
+      pc.ontrack = (e) => {
+        audioEl.srcObject = e.streams[0];
+      };
+
+      // Add local audio track
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+      // Create data channel
+      const dc = pc.createDataChannel('oai-events');
+      dataChannelRef.current = dc;
+
+      dc.onopen = () => {
+        console.log('Data channel opened');
+        // Send initial session update or response create
+        dc.send(JSON.stringify({
+          type: 'response.create',
+          response: {
+            modalities: ['audio', 'text'],
+            instructions: '请用中文简单介绍一下你自己',
+          },
+        }));
+      };
+
+      dc.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          console.log('Voice Event:', data.type, data);
+
+          switch (data.type) {
+            case 'conversation.item.input_audio_transcription.completed':
+              setVoiceMessages(prev => [...prev, { 
+                id: Math.random().toString(36).substr(2, 9), 
+                role: 'user', 
+                text: data.transcript, 
+                isDone: true 
+              }]);
+              break;
+
+            case 'response.audio_transcript.delta':
+              setVoiceMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last && last.role === 'assistant' && !last.isDone) {
+                  return [...prev.slice(0, -1), { ...last, text: last.text + data.delta }];
+                }
+                return [...prev, { 
+                  id: Math.random().toString(36).substr(2, 9), 
+                  role: 'assistant', 
+                  text: data.delta, 
+                  isDone: false 
+                }];
+              });
+              break;
+
+            case 'response.done':
+              const transcript = data.response?.output?.[0]?.content?.[0]?.transcript;
+              if (transcript) {
+                setVoiceMessages(prev => {
+                  const last = prev[prev.length - 1];
+                  if (last && last.role === 'assistant') {
+                    return [...prev.slice(0, -1), { ...last, text: transcript, isDone: true }];
+                  }
+                  return [...prev, { 
+                    id: Math.random().toString(36).substr(2, 9), 
+                    role: 'assistant', 
+                    text: transcript, 
+                    isDone: true 
+                  }];
+                });
+              }
+              break;
+          }
+        } catch (err) {
+          console.error('Error parsing voice event:', err);
+        }
+      };
+
+      // Create offer
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      // Send offer to OpenAI
+      const baseUrl = 'https://api.openai.com/v1/realtime';
+      const model = 'gpt-4o-realtime-preview-2024-12-17';
+      const sdpResponse = await fetch(`${baseUrl}?model=${model}&voice=${voice}`, {
+        method: 'POST',
+        body: offer.sdp,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/sdp',
+        },
+      });
+
+      const answerSdp = await sdpResponse.text();
+      await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+      setIsVoiceConnected(true);
+      // Hide window after connection
+      closeWindow(AppId.VOICE_ASSISTANT);
+
+    } catch (err: any) {
+      setVoiceError(err.message || 'Connection failed');
+      console.error(err);
+      disconnectVoice();
+    } finally {
+      setIsVoiceConnecting(false);
+    }
+  };
+
+  const disconnectVoice = () => {
+    if (dataChannelRef.current) {
+      dataChannelRef.current.close();
+      dataChannelRef.current = null;
+    }
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach(track => track.stop());
+      audioStreamRef.current = null;
+    }
+    if (audioElRef.current) {
+      audioElRef.current.srcObject = null;
+      audioElRef.current.remove();
+      audioElRef.current = null;
+    }
+    setIsVoiceConnected(false);
+    setVoiceMessages([]);
+  };
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [voiceMessages]);
-
-  useEffect(() => {
-    const handleConfig = (e: any) => {
-      setShowVoiceText(e.detail.showText);
-    };
-    const handleMessage = (e: any) => {
-      const { role, text } = e.detail;
-      setVoiceMessages(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), role, text, isDone: true }]);
-    };
-    const handleDelta = (e: any) => {
-      const { role, text } = e.detail;
-      setVoiceMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last && last.role === role && !last.isDone) {
-          return [...prev.slice(0, -1), { ...last, text: last.text + text }];
-        }
-        return [...prev, { id: Math.random().toString(36).substr(2, 9), role, text, isDone: false }];
-      });
-    };
-    const handleDone = (e: any) => {
-      const { role, text } = e.detail;
-      setVoiceMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last && last.role === role) {
-          return [...prev.slice(0, -1), { ...last, text, isDone: true }];
-        }
-        return [...prev, { id: Math.random().toString(36).substr(2, 9), role, text, isDone: true }];
-      });
-    };
-    const handleDisconnect = () => {
-      setIsVoiceConnected(false);
-      setVoiceMessages([]);
-    };
-
-    window.addEventListener('voice-assistant-config', handleConfig);
-    window.addEventListener('voice-assistant-message', handleMessage);
-    window.addEventListener('voice-assistant-delta', handleDelta);
-    window.addEventListener('voice-assistant-message-done', handleDone);
-    window.addEventListener('voice-assistant-disconnected', handleDisconnect);
-
-    return () => {
-      window.removeEventListener('voice-assistant-config', handleConfig);
-      window.removeEventListener('voice-assistant-message', handleMessage);
-      window.removeEventListener('voice-assistant-delta', handleDelta);
-      window.removeEventListener('voice-assistant-message-done', handleDone);
-      window.removeEventListener('voice-assistant-disconnected', handleDisconnect);
-    };
-  }, []);
-
-  const handleVoiceConnected = (connected: boolean) => {
-    setIsVoiceConnected(connected);
-    if (connected) {
-      // Hide window after connection
-      closeWindow(AppId.VOICE_ASSISTANT);
-    }
-  };
 
   // Load wallpaper from local storage if exists
   useEffect(() => {
@@ -237,7 +354,16 @@ export default function App() {
           case AppId.ABOUT: return <AboutApp />;
           case AppId.LIVE2D_GUIDE: return <Live2DGuideApp />;
           case AppId.LIVE2D_SETTINGS: return <Live2DSettingsApp />;
-          case AppId.VOICE_ASSISTANT: return <VoiceAssistantApp onConnected={handleVoiceConnected} />;
+          case AppId.VOICE_ASSISTANT: 
+            return <VoiceAssistantApp 
+              isConnected={isVoiceConnected}
+              isConnecting={isVoiceConnecting}
+              error={voiceError}
+              onConnect={connectVoice}
+              onDisconnect={disconnectVoice}
+              initialVoice={currentVoice}
+              initialShowText={showVoiceText}
+            />;
           case AppId.APPSTORE: return <div className="flex items-center justify-center h-full text-gray-400">App Store Unavailable</div>;
           default: return <div className="p-4">Content for {id}</div>;
       }

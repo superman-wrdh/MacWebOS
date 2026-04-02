@@ -1,268 +1,126 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Settings, MessageSquare, Power, Loader2, Volume2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Mic, MicOff, Volume2, AlertCircle, Loader2 } from 'lucide-react';
 
-type VoiceType = 'alloy' | 'ash' | 'ballad' | 'coral' | 'echo' | 'sage' | 'shimmer' | 'verse';
-
-interface VoiceAssistantProps {
-  onConnected?: (connected: boolean) => void;
+interface VoiceAssistantAppProps {
+  isConnected: boolean;
+  isConnecting: boolean;
+  error: string | null;
+  onConnect: (voice: string, showText: boolean) => void;
+  onDisconnect: () => void;
+  initialVoice?: string;
+  initialShowText?: boolean;
 }
 
-export const VoiceAssistantApp: React.FC<VoiceAssistantProps> = ({ onConnected }) => {
-  const [voice, setVoice] = useState<VoiceType>('alloy');
-  const [showText, setShowText] = useState(true);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export const VoiceAssistantApp: React.FC<VoiceAssistantAppProps> = ({ 
+  isConnected, 
+  isConnecting, 
+  error, 
+  onConnect, 
+  onDisconnect,
+  initialVoice = 'alloy',
+  initialShowText = true
+}) => {
+  const [voice, setVoice] = useState(initialVoice);
+  const [showText, setShowText] = useState(initialShowText);
 
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const dataChannelRef = useRef<RTCDataChannel | null>(null);
-  const audioStreamRef = useRef<MediaStream | null>(null);
-  const audioElRef = useRef<HTMLAudioElement | null>(null);
-
-  const voices: VoiceType[] = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse'];
-
-  useEffect(() => {
-    // Cleanup on unmount
-    return () => {
-      disconnect();
-    };
-  }, []);
-
-  const fetchToken = async () => {
-    try {
-      const response = await fetch('/api/v2/openai/realtime_token');
-      const result = await response.json();
-      if (result.code === 0 && result.data?.client_secret) {
-        return result.data.client_secret;
-      }
-      throw new Error(result.message || 'Failed to get token');
-    } catch (err) {
-      console.error('Error fetching token:', err);
-      throw err;
-    }
-  };
-
-  const connect = async () => {
-    setIsConnecting(true);
-    setError(null);
-    try {
-      const token = await fetchToken();
-      
-      // Get user media
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioStreamRef.current = stream;
-
-      // Create PeerConnection
-      const pc = new RTCPeerConnection();
-      peerConnectionRef.current = pc;
-
-      // Handle remote audio
-      const audioEl = document.createElement('audio');
-      audioEl.autoplay = true;
-      audioElRef.current = audioEl;
-      pc.ontrack = (e) => {
-        audioEl.srcObject = e.streams[0];
-      };
-
-      // Add local audio track
-      pc.addTrack(stream.getTracks()[0]);
-
-      // Create data channel
-      const dc = pc.createDataChannel('oai-events');
-      dataChannelRef.current = dc;
-
-      dc.onopen = () => {
-        console.log('Data channel opened');
-        // Send initial session update
-        const sessionUpdate = {
-          type: 'session.update',
-          session: {
-            voice: voice,
-            input_audio_transcription: { model: 'whisper-1' },
-            turn_detection: { type: 'server_vad' }
-          }
-        };
-        dc.send(JSON.stringify(sessionUpdate));
-      };
-
-      dc.onmessage = (e) => {
-        const event = JSON.parse(e.data);
-        handleServerEvent(event);
-      };
-
-      // Create offer
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      // Send offer to OpenAI
-      const baseUrl = 'https://api.openai.com/v1/realtime';
-      const model = 'gpt-4o-realtime-preview-2024-12-17';
-      const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
-        method: 'POST',
-        body: offer.sdp,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/sdp',
-        },
-      });
-
-      const answerSdp = await sdpResponse.text();
-      await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
-
-      setIsConnected(true);
-      if (onConnected) onConnected(true);
-      
-      // Notify system about showText preference
-      window.dispatchEvent(new CustomEvent('voice-assistant-config', { detail: { showText } }));
-
-    } catch (err: any) {
-      setError(err.message || 'Connection failed');
-      console.error(err);
-      disconnect();
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const disconnect = () => {
-    if (dataChannelRef.current) {
-      dataChannelRef.current.close();
-      dataChannelRef.current = null;
-    }
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-    if (audioStreamRef.current) {
-      audioStreamRef.current.getTracks().forEach(track => track.stop());
-      audioStreamRef.current = null;
-    }
-    if (audioElRef.current) {
-      audioElRef.current.srcObject = null;
-      audioElRef.current.remove();
-      audioElRef.current = null;
-    }
-    setIsConnected(false);
-    if (onConnected) onConnected(false);
-    window.dispatchEvent(new CustomEvent('voice-assistant-disconnected'));
-  };
-
-  const handleServerEvent = (event: any) => {
-    // console.log('Server event:', event.type, event);
-    
-    // Handle transcriptions
-    if (event.type === 'conversation.item.input_audio_transcription.completed') {
-      window.dispatchEvent(new CustomEvent('voice-assistant-message', { 
-        detail: { role: 'user', text: event.transcript } 
-      }));
-    } else if (event.type === 'response.audio_transcript.delta') {
-      window.dispatchEvent(new CustomEvent('voice-assistant-delta', { 
-        detail: { role: 'assistant', text: event.delta } 
-      }));
-    } else if (event.type === 'response.audio_transcript.done') {
-      window.dispatchEvent(new CustomEvent('voice-assistant-message-done', { 
-        detail: { role: 'assistant', text: event.transcript } 
-      }));
-    }
+  const handleConnect = () => {
+    onConnect(voice, showText);
   };
 
   return (
-    <div className="flex flex-col h-full bg-white/90 backdrop-blur-md p-6 overflow-y-auto">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-purple-600 rounded-2xl text-white shadow-lg shadow-purple-200">
-          <Mic size={32} />
+    <div className="h-full flex flex-col bg-gray-50/50">
+      <div className="flex-1 flex flex-col items-center justify-center p-8">
+        <div className="w-20 h-20 bg-purple-600 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-purple-500/20 mb-6">
+          <Volume2 size={40} />
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">语音助手</h1>
-          <p className="text-sm text-gray-500">OpenAI Realtime WebRTC</p>
-        </div>
-      </div>
 
-      <div className="space-y-6 flex-1">
-        {/* Voice Selection */}
-        <section className="space-y-3">
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <Settings size={16} className="text-purple-500" />
-            声音类型
-          </label>
-          <div className="grid grid-cols-4 gap-2">
-            {voices.map((v) => (
-              <button
-                key={v}
-                onClick={() => setVoice(v)}
-                disabled={isConnected || isConnecting}
-                className={`py-2 px-1 text-xs rounded-xl border transition-all ${
-                  voice === v 
-                    ? 'bg-purple-600 text-white border-purple-600 shadow-sm' 
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {v.charAt(0).toUpperCase() + v.slice(1)}
-              </button>
-            ))}
-          </div>
-        </section>
+        <h2 className="text-2xl font-bold text-gray-800 mb-1">语音助手</h2>
+        <p className="text-sm text-gray-500 mb-8">基于 OpenAI Realtime WebRTC</p>
 
-        {/* Options */}
-        <section className="space-y-3">
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <MessageSquare size={16} className="text-purple-500" />
-            显示选项
-          </label>
-          <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors">
-            <input 
-              type="checkbox" 
-              checked={showText}
-              onChange={(e) => setShowText(e.target.checked)}
-              disabled={isConnected || isConnecting}
-              className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-            />
-            <span className="text-sm text-gray-700 font-medium">显示对话文本</span>
-          </label>
-        </section>
-
-        {error && (
-          <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-medium animate-in fade-in slide-in-from-top-2">
-            {error}
-          </div>
-        )}
-      </div>
-
-      {/* Action Button */}
-      <div className="mt-8">
-        {!isConnected ? (
-          <button
-            onClick={connect}
-            disabled={isConnecting}
-            className="w-full flex items-center justify-center gap-3 py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-2xl text-lg font-bold transition-all shadow-xl shadow-purple-200 active:scale-95"
-          >
-            {isConnecting ? (
-              <>
-                <Loader2 size={24} className="animate-spin" />
-                正在连接...
-              </>
-            ) : (
-              <>
-                <Power size={24} />
-                连接
-              </>
-            )}
-          </button>
-        ) : (
-          <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
-            <div className="flex items-center gap-2 text-green-600 font-bold">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              已连接
+        <div className="w-full max-w-xs space-y-6">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-600 text-sm animate-in fade-in slide-in-from-top-2">
+              <AlertCircle size={18} className="shrink-0 mt-0.5" />
+              <p>{error}</p>
             </div>
-            <button
-              onClick={disconnect}
-              className="w-full flex items-center justify-center gap-3 py-4 bg-red-500 hover:bg-red-600 text-white rounded-2xl text-lg font-bold transition-all shadow-xl shadow-red-200 active:scale-95"
-            >
-              <MicOff size={24} />
-              断开连接
-            </button>
-          </div>
-        )}
+          )}
+
+          {!isConnected ? (
+            <div className="space-y-4 animate-in fade-in duration-500">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">声音类型</label>
+                <select
+                  value={voice}
+                  onChange={(e) => setVoice(e.target.value)}
+                  disabled={isConnecting}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all appearance-none cursor-pointer disabled:opacity-50"
+                >
+                  <option value="alloy">Alloy (中性/平衡)</option>
+                  <option value="ash">Ash (低沉/稳重)</option>
+                  <option value="ballad">Ballad (温柔/亲切)</option>
+                  <option value="coral">Coral (明亮/活泼)</option>
+                  <option value="echo">Echo (深邃/磁性)</option>
+                  <option value="sage">Sage (睿智/平和)</option>
+                  <option value="shimmer">Shimmer (清脆/动听)</option>
+                  <option value="verse">Verse (富有表现力)</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3">
+                <span className="text-sm text-gray-600 font-medium">显示对话文本</span>
+                <button
+                  onClick={() => setShowText(!showText)}
+                  disabled={isConnecting}
+                  className={`w-10 h-5 rounded-full transition-colors relative ${showText ? 'bg-purple-600' : 'bg-gray-200'} disabled:opacity-50`}
+                >
+                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${showText ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+
+              <button
+                onClick={handleConnect}
+                disabled={isConnecting}
+                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+              >
+                {isConnecting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    <span>正在连接...</span>
+                  </>
+                ) : (
+                  <>
+                    <Mic size={20} />
+                    <span>开始连接</span>
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4 animate-in zoom-in-95 duration-300">
+              <div className="bg-green-50 border border-green-100 rounded-2xl p-6 flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white mb-4 animate-pulse">
+                  <Mic size={24} />
+                </div>
+                <h3 className="font-bold text-green-800 mb-1">已连接</h3>
+                <p className="text-xs text-green-600 opacity-80">语音助手正在后台运行</p>
+              </div>
+
+              <button
+                onClick={onDisconnect}
+                className="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold py-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+              >
+                <MicOff size={20} />
+                <span>断开连接</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="p-6 border-t border-gray-100 bg-white/50 text-center">
+        <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em]">
+          OpenAI Realtime API • WebRTC Mode
+        </p>
       </div>
     </div>
   );

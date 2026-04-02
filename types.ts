@@ -12,7 +12,8 @@ export enum AppId {
   TRASH = 'trash',
   ABOUT = 'about',
   LIVE2D_GUIDE = 'live2d_guide',
-  LIVE2D_SETTINGS = 'live2d_settings'
+  LIVE2D_SETTINGS = 'live2d_settings',
+  VOICE_ASSISTANT = 'voice_assistant'
 }
 
 export interface WindowState {

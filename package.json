@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "lucide-react": "^0.554.0",
+    "motion": "^12.38.0",
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "^6.5.10",
     "pixi.js-legacy": "^6.5.10",

@@ -12,7 +12,8 @@ import {
   HardDrive,
   Info,
   BookOpen,
-  Sliders
+  Sliders,
+  Mic
 } from 'lucide-react';
 import { AppId, AppConfig } from './types';
 
@@ -99,5 +100,12 @@ export const APP_CONFIGS: Record<AppId, AppConfig> = {
     icon: <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-md border border-indigo-300"><Sliders size={24} /></div>,
     defaultWidth: 350,
     defaultHeight: 250
+  },
+  [AppId.VOICE_ASSISTANT]: {
+    id: AppId.VOICE_ASSISTANT,
+    name: '语音助手',
+    icon: <div className="w-full h-full bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md border border-purple-400"><Mic size={24} /></div>,
+    defaultWidth: 400,
+    defaultHeight: 500
   }
 };

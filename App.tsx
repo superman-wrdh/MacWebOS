@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MenuBar } from './components/MenuBar';
 import { Dock } from './components/Dock';
 import { Window } from './components/Window';
@@ -14,8 +14,17 @@ import { NotesApp } from './apps/Notes';
 import { AboutApp } from './apps/About';
 import { Live2DGuideApp } from './apps/Live2DGuide';
 import { Live2DSettingsApp } from './apps/Live2DSettings';
+import { VoiceAssistantApp } from './apps/VoiceAssistant';
 import { Live2D } from './components/Live2D';
-import { Lock, ArrowRight } from 'lucide-react';
+import { Lock, ArrowRight, Mic } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+
+interface VoiceMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  isDone?: boolean;
+}
 
 export default function App() {
   const [wallpaper, setWallpaper] = useState<string>(DEFAULT_WALLPAPER);
@@ -27,6 +36,74 @@ export default function App() {
   const [windows, setWindows] = useState<WindowState[]>([]);
   const [activeWindowId, setActiveWindowId] = useState<AppId | null>(null);
   const [nextZIndex, setNextZIndex] = useState(10);
+
+  // Voice Assistant State
+  const [isVoiceConnected, setIsVoiceConnected] = useState(false);
+  const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>([]);
+  const [showVoiceText, setShowVoiceText] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [voiceMessages]);
+
+  useEffect(() => {
+    const handleConfig = (e: any) => {
+      setShowVoiceText(e.detail.showText);
+    };
+    const handleMessage = (e: any) => {
+      const { role, text } = e.detail;
+      setVoiceMessages(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), role, text, isDone: true }]);
+    };
+    const handleDelta = (e: any) => {
+      const { role, text } = e.detail;
+      setVoiceMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last && last.role === role && !last.isDone) {
+          return [...prev.slice(0, -1), { ...last, text: last.text + text }];
+        }
+        return [...prev, { id: Math.random().toString(36).substr(2, 9), role, text, isDone: false }];
+      });
+    };
+    const handleDone = (e: any) => {
+      const { role, text } = e.detail;
+      setVoiceMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last && last.role === role) {
+          return [...prev.slice(0, -1), { ...last, text, isDone: true }];
+        }
+        return [...prev, { id: Math.random().toString(36).substr(2, 9), role, text, isDone: true }];
+      });
+    };
+    const handleDisconnect = () => {
+      setIsVoiceConnected(false);
+      setVoiceMessages([]);
+    };
+
+    window.addEventListener('voice-assistant-config', handleConfig);
+    window.addEventListener('voice-assistant-message', handleMessage);
+    window.addEventListener('voice-assistant-delta', handleDelta);
+    window.addEventListener('voice-assistant-message-done', handleDone);
+    window.addEventListener('voice-assistant-disconnected', handleDisconnect);
+
+    return () => {
+      window.removeEventListener('voice-assistant-config', handleConfig);
+      window.removeEventListener('voice-assistant-message', handleMessage);
+      window.removeEventListener('voice-assistant-delta', handleDelta);
+      window.removeEventListener('voice-assistant-message-done', handleDone);
+      window.removeEventListener('voice-assistant-disconnected', handleDisconnect);
+    };
+  }, []);
+
+  const handleVoiceConnected = (connected: boolean) => {
+    setIsVoiceConnected(connected);
+    if (connected) {
+      // Hide window after connection
+      closeWindow(AppId.VOICE_ASSISTANT);
+    }
+  };
 
   // Load wallpaper from local storage if exists
   useEffect(() => {
@@ -160,6 +237,7 @@ export default function App() {
           case AppId.ABOUT: return <AboutApp />;
           case AppId.LIVE2D_GUIDE: return <Live2DGuideApp />;
           case AppId.LIVE2D_SETTINGS: return <Live2DSettingsApp />;
+          case AppId.VOICE_ASSISTANT: return <VoiceAssistantApp onConnected={handleVoiceConnected} />;
           case AppId.APPSTORE: return <div className="flex items-center justify-center h-full text-gray-400">App Store Unavailable</div>;
           default: return <div className="p-4">Content for {id}</div>;
       }
@@ -254,6 +332,67 @@ export default function App() {
 
         {/* Live2D Model */}
         <Live2D />
+
+        {/* Voice Assistant Conversation Box */}
+        <AnimatePresence>
+          {isVoiceConnected && showVoiceText && voiceMessages.length > 0 && (
+            <motion.div
+              drag
+              dragMomentum={false}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              className="absolute right-8 top-20 w-80 max-h-[60vh] bg-black/40 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col z-50"
+            >
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <span className="text-xs font-bold text-white/80 uppercase tracking-widest">实时对话</span>
+                </div>
+                <div className="w-8 h-1 bg-white/20 rounded-full cursor-grab active:cursor-grabbing" />
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+                {voiceMessages.map((msg, i) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
+                  >
+                    <div 
+                      className={`max-w-[90%] px-4 py-2 rounded-2xl text-sm ${
+                        msg.role === 'user' 
+                          ? 'bg-purple-600/80 text-white rounded-tr-none' 
+                          : 'bg-white/10 text-white/90 rounded-tl-none'
+                      } ${i === voiceMessages.length - 1 ? 'ring-2 ring-purple-400/50 shadow-lg shadow-purple-500/20' : ''}`}
+                    >
+                      {msg.text}
+                    </div>
+                  </motion.div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Voice Assistant Mic Icon */}
+        <AnimatePresence>
+          {isVoiceConnected && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => openApp(AppId.VOICE_ASSISTANT)}
+              className="absolute bottom-24 right-8 w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-purple-500/40 cursor-pointer z-50 group"
+            >
+              <div className="absolute inset-0 bg-purple-400 rounded-full animate-ping opacity-20 group-hover:opacity-40" />
+              <Mic size={24} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Windows */}
         {windows.map(win => (

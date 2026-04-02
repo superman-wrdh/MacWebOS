@@ -49,7 +49,7 @@ export default function App() {
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const fetchVoiceToken = async () => {
     try {
@@ -217,8 +217,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   }, [voiceMessages]);
 
@@ -477,7 +477,10 @@ export default function App() {
                 </div>
                 <div className="w-8 h-1 bg-white/20 rounded-full cursor-grab active:cursor-grabbing" />
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+              <div 
+                ref={messagesContainerRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
+              >
                 {voiceMessages.map((msg, i) => (
                   <motion.div
                     key={msg.id}
@@ -496,7 +499,6 @@ export default function App() {
                     </div>
                   </motion.div>
                 ))}
-                <div ref={messagesEndRef} />
               </div>
             </motion.div>
           )}

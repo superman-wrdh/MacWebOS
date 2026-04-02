@@ -17,6 +17,7 @@ export const Dock: React.FC<DockProps> = ({ onAppClick, openApps }) => {
     AppId.CALENDAR,
     AppId.NOTES,
     AppId.APPSTORE,
+    AppId.VOICE_ASSISTANT,
     AppId.SETTINGS,
   ];
 

@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react';
-import { Image, Monitor, Lock, Wifi, Bluetooth, Volume2, Users, User, KeyRound } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Image, Monitor, Lock, Wifi, Bluetooth, Volume2, Users, User, KeyRound, Loader2 } from 'lucide-react';
+import { fetchNetworkWallpapers, Wallpaper } from '../services/settingsApi';
 
 interface SettingsProps {
   onWallpaperChange: (url: string) => void;
@@ -18,6 +19,24 @@ export const SettingsApp: React.FC<SettingsProps> = ({ onWallpaperChange, curren
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [msg, setMsg] = useState({ text: '', type: '' });
+
+  const [networkWallpapers, setNetworkWallpapers] = useState<Wallpaper[]>([]);
+  const [isLoadingWallpapers, setIsLoadingWallpapers] = useState(false);
+
+  useEffect(() => {
+    const loadWallpapers = async () => {
+      setIsLoadingWallpapers(true);
+      try {
+        const wallpapers = await fetchNetworkWallpapers();
+        setNetworkWallpapers(wallpapers);
+      } catch (err) {
+        console.error('Failed to load network wallpapers', err);
+      } finally {
+        setIsLoadingWallpapers(false);
+      }
+    };
+    loadWallpapers();
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -57,12 +76,14 @@ export const SettingsApp: React.FC<SettingsProps> = ({ onWallpaperChange, curren
       }
   };
 
-  const wallpapers = [
+  const defaultWallpapers = [
      "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=2070",
      "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2070",
      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070",
      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964",
   ];
+
+  const allWallpapers = [...defaultWallpapers, ...networkWallpapers.map(wp => wp.url)];
 
   return (
     <div className="flex h-full bg-gray-100">
@@ -152,13 +173,19 @@ export const SettingsApp: React.FC<SettingsProps> = ({ onWallpaperChange, curren
                 </div>
 
                 <h3 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Collections</h3>
-                <div className="grid grid-cols-2 gap-4">
-                    {wallpapers.map((wp, idx) => (
-                        <button key={idx} onClick={() => onWallpaperChange(wp)} className="relative group rounded-lg overflow-hidden h-28 shadow-sm hover:ring-2 hover:ring-blue-500 focus:outline-none transition-all">
-                            <img src={wp} alt={`Wallpaper ${idx}`} className="w-full h-full object-cover" />
-                        </button>
-                    ))}
-                </div>
+                {isLoadingWallpapers ? (
+                    <div className="flex items-center justify-center py-8 text-gray-400">
+                        <Loader2 size={24} className="animate-spin" />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                        {allWallpapers.map((wp, idx) => (
+                            <button key={idx} onClick={() => onWallpaperChange(wp)} className="relative group rounded-lg overflow-hidden h-28 shadow-sm hover:ring-2 hover:ring-blue-500 focus:outline-none transition-all">
+                                <img src={wp} alt={`Wallpaper ${idx}`} className="w-full h-full object-cover" />
+                            </button>
+                        ))}
+                    </div>
+                )}
             </>
         )}
 

@@ -399,23 +399,7 @@ export default function App() {
       
       {/* Desktop Area - Click to clear focus could go here */}
       <div className="absolute inset-0 top-8 bottom-20" onClick={() => setActiveWindowId(null)}>
-        {/* Desktop Icons */}
-        <div className="absolute top-4 right-4 flex flex-col items-end gap-4 p-4 z-0">
-          <div 
-            className="flex flex-col items-center gap-1 w-20 cursor-pointer group"
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              openApp(AppId.LIVE2D_GUIDE);
-            }}
-          >
-            <div className="w-14 h-14 rounded-xl shadow-sm overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95 group-active:brightness-90">
-              {APP_CONFIGS[AppId.LIVE2D_GUIDE].icon}
-            </div>
-            <span className="text-white text-xs font-medium text-center drop-shadow-md bg-black/20 px-2 py-0.5 rounded-md backdrop-blur-sm">
-              {APP_CONFIGS[AppId.LIVE2D_GUIDE].name}
-            </span>
-          </div>
-        </div>
+        {/* Desktop Icons (Removed) */}
 
         {/* Live2D Model */}
         <Live2D />

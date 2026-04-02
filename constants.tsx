@@ -96,7 +96,7 @@ export const APP_CONFIGS: Record<AppId, AppConfig> = {
   },
   [AppId.LIVE2D_SETTINGS]: {
     id: AppId.LIVE2D_SETTINGS,
-    name: '模型设置',
+    name: '角色设置',
     icon: <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-md border border-indigo-300"><Sliders size={24} /></div>,
     defaultWidth: 350,
     defaultHeight: 250

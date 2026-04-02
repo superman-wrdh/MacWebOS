@@ -415,21 +415,6 @@ export default function App() {
               {APP_CONFIGS[AppId.LIVE2D_GUIDE].name}
             </span>
           </div>
-
-          <div 
-            className="flex flex-col items-center gap-1 w-20 cursor-pointer group"
-            onDoubleClick={(e) => {
-              e.stopPropagation();
-              openApp(AppId.LIVE2D_SETTINGS);
-            }}
-          >
-            <div className="w-14 h-14 rounded-xl shadow-sm overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95 group-active:brightness-90">
-              {APP_CONFIGS[AppId.LIVE2D_SETTINGS].icon}
-            </div>
-            <span className="text-white text-xs font-medium text-center drop-shadow-md bg-black/20 px-2 py-0.5 rounded-md backdrop-blur-sm">
-              {APP_CONFIGS[AppId.LIVE2D_SETTINGS].name}
-            </span>
-          </div>
         </div>
 
         {/* Live2D Model */}

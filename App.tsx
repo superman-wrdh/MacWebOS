@@ -18,6 +18,7 @@ import { VoiceAssistantApp } from './apps/VoiceAssistant';
 import { Live2D } from './components/Live2D';
 import { Lock, ArrowRight, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { fetchVoiceToken, fetchVoiceSDP } from './services/voiceApi';
 
 interface VoiceMessage {
   id: string;
@@ -50,20 +51,6 @@ export default function App() {
   const audioStreamRef = useRef<MediaStream | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-
-  const fetchVoiceToken = async () => {
-    try {
-      const response = await fetch('/api/v2/openai/realtime_token');
-      const result = await response.json();
-      if (result.code === 0 && result.data?.client_secret) {
-        return result.data.client_secret;
-      }
-      throw new Error(result.message || 'Failed to get token');
-    } catch (err) {
-      console.error('Error fetching token:', err);
-      throw err;
-    }
-  };
 
   const connectVoice = async (voice: string, showText: boolean) => {
     setIsVoiceConnecting(true);
@@ -166,19 +153,8 @@ export default function App() {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      // Send offer to OpenAI
-      const baseUrl = 'https://api.openai.com/v1/realtime';
-      const model = 'gpt-4o-realtime-preview-2024-12-17';
-      const sdpResponse = await fetch(`${baseUrl}?model=${model}&voice=${voice}`, {
-        method: 'POST',
-        body: offer.sdp,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/sdp',
-        },
-      });
-
-      const answerSdp = await sdpResponse.text();
+      // Send offer to OpenAI and get answer
+      const answerSdp = await fetchVoiceSDP(offer.sdp || '', token, voice);
       await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
 
       setIsVoiceConnected(true);

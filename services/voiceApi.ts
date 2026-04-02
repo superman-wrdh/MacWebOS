@@ -1,6 +1,6 @@
-export const fetchVoiceToken = async (): Promise<string> => {
+export const fetchVoiceToken = async (voice: string): Promise<string> => {
   try {
-    const response = await fetch('/api/v2/openai/realtime_token');
+    const response = await fetch(`/api/v2/openai/realtime_token?voice=${voice}`);
     const result = await response.json();
     if (result.code === 0 && result.data?.client_secret) {
       return result.data.client_secret;

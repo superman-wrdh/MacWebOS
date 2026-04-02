@@ -59,7 +59,7 @@ export default function App() {
     setShowVoiceText(showText);
     
     try {
-      const token = await fetchVoiceToken();
+      const token = await fetchVoiceToken(voice);
       
       // Get user media
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });

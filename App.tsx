@@ -91,8 +91,17 @@ export default function App() {
           type: 'session.update',
           session: {
             modalities: ['audio', 'text'],
-            input_audio_transcription: { model: 'whisper-1' },
+            input_audio_transcription: { 
+              model: 'whisper-1',
+              language: 'zh'
+            },
             voice: voice,
+            turn_detection: {
+              type: 'server_vad',
+              threshold: 0.5,
+              prefix_padding_ms: 300,
+              silence_duration_ms: 500
+            }
           }
         }));
 
@@ -114,16 +123,21 @@ export default function App() {
             case 'conversation.item.created':
               if (data.item.type === 'message' && data.item.role === 'user') {
                 setVoiceMessages(prev => {
-                  // Avoid duplicate items if server sends redundancy
                   if (prev.some(m => m.id === data.item.id)) return prev;
                   return [...prev, { 
                     id: data.item.id, 
                     role: 'user', 
-                    text: '正在识别...', 
+                    text: '', 
                     isDone: false 
                   }];
                 });
               }
+              break;
+
+            case 'conversation.item.input_audio_transcription.delta':
+              setVoiceMessages(prev => prev.map(m => 
+                m.id === data.item_id ? { ...m, text: m.text + data.delta } : m
+              ));
               break;
 
             case 'conversation.item.input_audio_transcription.completed':
@@ -138,7 +152,6 @@ export default function App() {
                 if (existing) {
                   return prev.map(m => m.id === data.item_id ? { ...m, text: m.text + data.delta } : m);
                 }
-                // If delta arrives before response.created or item tracking
                 return [...prev, { 
                   id: data.item_id, 
                   role: 'assistant', 
@@ -457,7 +470,10 @@ export default function App() {
                           : 'bg-white/10 border border-white/10 text-white/90 rounded-tl-none'
                       } ${i === voiceMessages.length - 1 && msg.role === 'assistant' ? 'ring-2 ring-purple-400/30' : ''}`}
                     >
-                      {msg.text}
+                      {msg.text || (msg.role === 'user' ? '...' : '')}
+                      {!msg.isDone && (
+                        <span className="inline-block w-1.5 h-3.5 bg-current ml-1 animate-pulse align-middle opacity-50" />
+                      )}
                     </div>
                   </motion.div>
                 ))}

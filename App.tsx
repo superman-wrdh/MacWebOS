@@ -111,23 +111,36 @@ export default function App() {
           console.log('Voice Event:', data.type, data);
 
           switch (data.type) {
+            case 'conversation.item.created':
+              if (data.item.type === 'message' && data.item.role === 'user') {
+                setVoiceMessages(prev => {
+                  // Avoid duplicate items if server sends redundancy
+                  if (prev.some(m => m.id === data.item.id)) return prev;
+                  return [...prev, { 
+                    id: data.item.id, 
+                    role: 'user', 
+                    text: '正在识别...', 
+                    isDone: false 
+                  }];
+                });
+              }
+              break;
+
             case 'conversation.item.input_audio_transcription.completed':
-              setVoiceMessages(prev => [...prev, { 
-                id: Math.random().toString(36).substr(2, 9), 
-                role: 'user', 
-                text: data.transcript, 
-                isDone: true 
-              }]);
+              setVoiceMessages(prev => prev.map(m => 
+                m.id === data.item_id ? { ...m, text: data.transcript, isDone: true } : m
+              ));
               break;
 
             case 'response.audio_transcript.delta':
               setVoiceMessages(prev => {
-                const last = prev[prev.length - 1];
-                if (last && last.role === 'assistant' && !last.isDone) {
-                  return [...prev.slice(0, -1), { ...last, text: last.text + data.delta }];
+                const existing = prev.find(m => m.id === data.item_id);
+                if (existing) {
+                  return prev.map(m => m.id === data.item_id ? { ...m, text: m.text + data.delta } : m);
                 }
+                // If delta arrives before response.created or item tracking
                 return [...prev, { 
-                  id: Math.random().toString(36).substr(2, 9), 
+                  id: data.item_id, 
                   role: 'assistant', 
                   text: data.delta, 
                   isDone: false 
@@ -137,19 +150,11 @@ export default function App() {
 
             case 'response.done':
               const transcript = data.response?.output?.[0]?.content?.[0]?.transcript;
-              if (transcript) {
-                setVoiceMessages(prev => {
-                  const last = prev[prev.length - 1];
-                  if (last && last.role === 'assistant') {
-                    return [...prev.slice(0, -1), { ...last, text: transcript, isDone: true }];
-                  }
-                  return [...prev, { 
-                    id: Math.random().toString(36).substr(2, 9), 
-                    role: 'assistant', 
-                    text: transcript, 
-                    isDone: true 
-                  }];
-                });
+              const itemId = data.response?.output?.[0]?.id;
+              if (transcript && itemId) {
+                setVoiceMessages(prev => prev.map(m => 
+                  m.id === itemId ? { ...m, text: transcript, isDone: true } : m
+                ));
               }
               break;
           }

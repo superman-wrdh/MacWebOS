@@ -56,16 +56,15 @@ export const VoiceAssistantApp: React.FC<VoiceAssistantAppProps> = ({
                   className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all appearance-none cursor-pointer disabled:opacity-50"
                 >
                     <option value="alloy">Alloy (中性/平衡)</option>
-                    <option value="ash">Ash (男-低沉/稳重)</option>
-                    <option value="ballad">Ballad (男-温柔/亲切)</option>
-                    <option value="coral">Coral (女-明亮/活泼)</option>
-                    <option value="echo">Echo (男-深邃/磁性)</option>
-                    <option value="sage">Sage (女-睿智/平和)</option>
-                    <option value="shimmer">Shimmer (女-清脆/动听)</option>
-                    <option value="verse">Verse (男-富有表现力)</option>
-                    <option value="marin">marin (女-白领)</option>
-                    <option value="verse">verse (男-浑厚)</option>
-                    <option value="cedar">cedar (男-沉稳)</option>
+                    <option value="ash">Ash (男 - 低沉/稳重)</option>
+                    <option value="ballad">Ballad (男 - 温柔/亲切)</option>
+                    <option value="coral">Coral (女 - 明亮/活泼)</option>
+                    <option value="echo">Echo (男 - 深邃/磁性)</option>
+                    <option value="sage">Sage (女 - 睿智/平和)</option>
+                    <option value="shimmer">Shimmer (女 - 清脆/动听)</option>
+                    <option value="verse">Verse (男 - 富有表现力)</option>
+                    <option value="marin">Marin (女 - 白领)</option>
+                    <option value="cedar">Cedar (男 - 沉稳)</option>
                 </select>
               </div>
 

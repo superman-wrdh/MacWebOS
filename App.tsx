@@ -86,12 +86,21 @@ export default function App() {
 
       dc.onopen = () => {
         console.log('Data channel opened');
-        // Send initial session update or response create
+        // Configure session
+        dc.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            modalities: ['audio', 'text'],
+            input_audio_transcription: { model: 'whisper-1' },
+            voice: voice,
+          }
+        }));
+
+        // Send initial request
         dc.send(JSON.stringify({
           type: 'response.create',
           response: {
-            modalities: ['audio', 'text'],
-            instructions: '请用中文简单介绍一下你自己',
+            instructions: '请用中文简单介绍一下你自己，并告诉用户你已经准备好聊天了。',
           },
         }));
       };
@@ -429,16 +438,19 @@ export default function App() {
                 {voiceMessages.map((msg, i) => (
                   <motion.div
                     key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
+                    animate={{ opacity: 1, x: 0 }}
                     className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                   >
+                    <div className={`text-[10px] mb-1 px-2 font-bold uppercase tracking-wider ${msg.role === 'user' ? 'text-purple-300' : 'text-gray-400'}`}>
+                      {msg.role === 'user' ? '你' : 'AI'}
+                    </div>
                     <div 
-                      className={`max-w-[90%] px-4 py-2 rounded-2xl text-sm ${
+                      className={`max-w-[90%] px-4 py-2 rounded-2xl text-sm transition-all duration-300 ${
                         msg.role === 'user' 
-                          ? 'bg-purple-600/80 text-white rounded-tr-none' 
-                          : 'bg-white/10 text-white/90 rounded-tl-none'
-                      } ${i === voiceMessages.length - 1 ? 'ring-2 ring-purple-400/50 shadow-lg shadow-purple-500/20' : ''}`}
+                          ? 'bg-purple-600 border border-purple-500/50 text-white rounded-tr-none shadow-lg shadow-purple-900/20' 
+                          : 'bg-white/10 border border-white/10 text-white/90 rounded-tl-none'
+                      } ${i === voiceMessages.length - 1 && msg.role === 'assistant' ? 'ring-2 ring-purple-400/30' : ''}`}
                     >
                       {msg.text}
                     </div>
